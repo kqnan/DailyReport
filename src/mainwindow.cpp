@@ -9,6 +9,8 @@
 #include <QTextStream>
 #include <QPlainTextEdit>
 #include <QComboBox>
+#include <QDesktopServices>
+#include <QUrl>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -37,6 +39,7 @@ void MainWindow::initUI() {
     exportCsvButton = new QPushButton("📥 导出 CSV");
     exportJsonButton = new QPushButton("📥 导出 JSON");
     todayButton = new QPushButton("今天");
+    openFolderButton = new QPushButton("📂 打开记录文件夹");
 
     totalHoursLabel = new QLabel("0小时");
     sessionCountLabel = new QLabel("0 段");
@@ -85,6 +88,7 @@ void MainWindow::initUI() {
     QHBoxLayout *exportLayout = new QHBoxLayout();
     exportLayout->addWidget(exportCsvButton);
     exportLayout->addWidget(exportJsonButton);
+    exportLayout->addWidget(openFolderButton);
     mainLayout->addLayout(exportLayout);
 
     // Session list
@@ -103,6 +107,7 @@ void MainWindow::initUI() {
     connect(deleteButton, &QPushButton::clicked, this, &MainWindow::onDeleteSession);
     connect(exportCsvButton, &QPushButton::clicked, this, &MainWindow::onExport);
     connect(exportJsonButton, &QPushButton::clicked, this, &MainWindow::onExport);
+    connect(openFolderButton, &QPushButton::clicked, this, &MainWindow::onOpenFolder);
 }
 
 void MainWindow::onStartShift() {
@@ -405,4 +410,9 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     }
 
     QMainWindow::closeEvent(event);
+}
+
+void MainWindow::onOpenFolder() {
+    QString folderPath = getStorageDirectory();
+    QDesktopServices::openUrl(QUrl::fromLocalFile(folderPath));
 }

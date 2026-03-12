@@ -24,6 +24,7 @@ private slots:
     void onEditSession();
     void onDeleteSession();
     void onExport();
+    void onOpenFolder();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -37,6 +38,7 @@ private:
     QPushButton *exportCsvButton;
     QPushButton *exportJsonButton;
     QPushButton *todayButton;
+    QPushButton *openFolderButton;
 
     // Labels
     QLabel *totalHoursLabel;
