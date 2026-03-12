@@ -125,3 +125,44 @@ jobs:
           name: qt-build-macos
           path: |
             build/DailyReport
+
+  build-qt-android:
+    name: Build Qt App on Android
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.4.3'
+          target: android
+          modules: 'qtbase qtdeclarative qttools'
+          install-deps: true
+
+      - name: Configure CMake
+        run: |
+          mkdir -p build
+          cd build
+          cmake -DCMAKE_TOOLCHAIN_FILE=$ANDROID_SDK_ROOT/cmake/toolchain.cmake \
+                -DCMAKE_ANDROID_API=21 \
+                -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
+                -DCMAKE_ANDROID_NDK=$ANDROID_SDK_ROOT/ndk/25.1.8937393 \
+                -DCMAKE_ANDROID_APK_SOURCE_ABI=arm64-v8a \
+                -DCMAKE_INSTALL_PREFIX=./install ..
+        shell: bash
+
+      - name: Build
+        run: |
+          cmake --build build --config Release
+        shell: bash
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-build-android
+          path: |
+            build/libDailyReport.so
+            build/gradle/wrapper/gradle-wrapper.jar
