@@ -1,0 +1,111 @@
+name: Build Qt App
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  release:
+    types:
+      - published
+
+jobs:
+  build-qt:
+    name: Build Qt App on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup C++ compiler
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ cmake
+
+      - name: Setup C++ compiler (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/setup-ninja@v1
+
+      - name: Setup C++ compiler (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          xcodebuild -version
+          cmake --version
+
+      - name: Install Qt (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get install -y qt6-base-dev qt6-tools-dev
+
+      - name: Install Qt (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install qt --version=6.6.0
+        shell: pwsh
+
+      - name: Install Qt (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install qt@6
+
+      - name: Configure CMake (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          mkdir -p build
+          cd build
+          cmake -DCMAKE_PREFIX_DIR=$(qtpaths6 --qt-install-prefix) ..
+
+      - name: Configure CMake (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja ..
+        shell: pwsh
+
+      - name: Build (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          cmake --build build
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cmake --build build --config Release
+        shell: pwsh
+
+      - name: Deploy Qt dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          chmod +x package/linux/deploy.sh
+          ./package/linux/deploy.sh
+
+      - name: Deploy Qt dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          # TODO: Implement macOS deployment
+          echo "macOS deployment not implemented yet"
+
+      - name: Deploy Qt dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          # TODO: Implement Windows deployment
+          echo "Windows deployment not implemented yet"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-build-${{ matrix.os }}
+          path: |
+            build/DailyReport
+            build/DailyReport.exe
+            package/linux/DailyReport
+            package/macOS/DailyReport.app
+            package/windows/DailyReport

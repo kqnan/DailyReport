@@ -1,9 +1,9 @@
 /target
 
 # Qt build artifacts
-qt-app/build/
-qt-app/*.pro.user
-qt-app/*.user
+build/
+*.pro.user
+*.user
 
 # Visual Studio Code
 .vscode/
