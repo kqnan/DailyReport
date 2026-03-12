@@ -17,6 +17,7 @@ public:
     QList<WorkSession> getTodaySessions();
     WorkSession getActiveSession();
     DailyStatistics getTodayStatistics();
+    DailyStatistics getStatisticsForDate(const QString &date);
 
 private:
     SessionManager() = default;

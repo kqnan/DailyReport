@@ -162,3 +162,17 @@ DailyStatistics SessionManager::getTodayStatistics() {
 
     return stat;
 }
+
+DailyStatistics SessionManager::getStatisticsForDate(const QString &date) {
+    QList<WorkSession> sessions = loadSessions(date);
+    DailyStatistics stat;
+    stat.date = date;
+    stat.totalHours = 0;
+    stat.sessionCount = sessions.size();
+
+    for (const WorkSession &s : sessions) {
+        stat.totalHours += s.durationHours;
+    }
+
+    return stat;
+}

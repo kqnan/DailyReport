@@ -96,7 +96,7 @@ void MainWindow::initUI() {
     connect(dateEdit, &QDateEdit::dateChanged, this, &MainWindow::onDateChanged);
     connect(todayButton, &QPushButton::clicked, [this]() {
         dateEdit->setDate(QDate::currentDate());
-        loadSessions(getCurrentDate());
+        loadSessions(dateEdit->date().toString("yyyy-MM-dd"));
     });
     connect(sessionListWidget, &QListWidget::itemActivated, this, &MainWindow::onEditSession);
     connect(editButton, &QPushButton::clicked, this, &MainWindow::onEditSession);
@@ -180,7 +180,7 @@ void MainWindow::onEndShift() {
         startButton->show();
         endButton->hide();
         startTimeLabel->setText("开始时间: -");
-        loadSessions(getCurrentDate());
+        loadSessions(dateEdit->date().toString("yyyy-MM-dd"));
     }
 
     delete dialog;
@@ -193,8 +193,8 @@ void MainWindow::onDateChanged(const QDate &date) {
 void MainWindow::loadSessions(const QString &date) {
     currentSessions = SessionManager::instance().loadSessions(date);
 
-    // Update statistics
-    DailyStatistics stat = SessionManager::instance().getTodayStatistics();
+    // Update statistics for the selected date
+    DailyStatistics stat = SessionManager::instance().getStatisticsForDate(date);
     totalHoursLabel->setText(formatDuration(stat.totalHours));
     sessionCountLabel->setText(QString::number(stat.sessionCount) + " 段");
 
