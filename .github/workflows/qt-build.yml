@@ -76,7 +76,7 @@ jobs:
       - name: Deploy Qt dependencies
         run: |
           # Copy Qt DLLs to build directory
-          $qtPath = $env:QT_INSTALL_DIR
+          $qtPath = $env:QT_ROOT_DIR
           Write-Host "Qt install dir: $qtPath"
           $targetDir = "build/Release"
           mkdir $targetDir -Force
