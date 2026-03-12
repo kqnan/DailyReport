@@ -75,21 +75,41 @@ jobs:
 
       - name: Deploy Qt dependencies
         run: |
-          # Copy Qt DLLs to build directory
+          # Use windeployqt to copy Qt dependencies automatically
+          # This handles all DLLs including the correct SSL versions
           $qtPath = $env:QT_ROOT_DIR
           Write-Host "Qt install dir: $qtPath"
           $targetDir = "build/Release"
           mkdir $targetDir -Force
-          Copy-Item "$qtPath\bin\Qt6Core.dll" -Destination $targetDir -Force
-          Copy-Item "$qtPath\bin\Qt6Widgets.dll" -Destination $targetDir -Force
-          Copy-Item "$qtPath\bin\Qt6Gui.dll" -Destination $targetDir -Force
-          Copy-Item "$qtPath\bin\Qt6Network.dll" -Destination $targetDir -Force
-          # Copy SSL DLLs for HTTPS support
-          Copy-Item "$qtPath\bin\libcrypto-3.dll" -Destination $targetDir -Force
-          Copy-Item "$qtPath\bin\libssl-3.dll" -Destination $targetDir -Force
-          # Copy platform plugin
-          mkdir "$targetDir\platforms" -Force
-          Copy-Item "$qtPath\plugins\platforms\qwindows.dll" -Destination "$targetDir\platforms\" -Force
+
+          # Copy executable first
+          Copy-Item "build\Release\DailyReport.exe" -Destination $targetDir -Force
+
+          # Use windeployqt for automatic dependency resolution
+          # Qt 6.4.3 uses libcrypto-1_1.dll and libssl-1_1.dll
+          # Qt 6.5+ uses libcrypto-3.dll and libssl-3.dll
+          $windeployqt = "$qtPath\bin\windeployqt.exe"
+          if (Test-Path $windeployqt) {
+            Write-Host "Running windeployqt..."
+            & $windeployqt --dir $targetDir $targetDir\DailyReport.exe --platform qwindows
+          } else {
+            Write-Host "windeployqt not found, using manual copy..."
+            Copy-Item "$qtPath\bin\Qt6Core.dll" -Destination $targetDir -Force
+            Copy-Item "$qtPath\bin\Qt6Widgets.dll" -Destination $targetDir -Force
+            Copy-Item "$qtPath\bin\Qt6Gui.dll" -Destination $targetDir -Force
+            Copy-Item "$qtPath\bin\Qt6Network.dll" -Destination $targetDir -Force
+            # Try both possible SSL DLL names
+            if (Test-Path "$qtPath\bin\libcrypto-3.dll") {
+              Copy-Item "$qtPath\bin\libcrypto-3.dll" -Destination $targetDir -Force
+              Copy-Item "$qtPath\bin\libssl-3.dll" -Destination $targetDir -Force
+            } elseif (Test-Path "$qtPath\bin\libcrypto-1_1.dll") {
+              Copy-Item "$qtPath\bin\libcrypto-1_1.dll" -Destination $targetDir -Force
+              Copy-Item "$qtPath\bin\libssl-1_1.dll" -Destination $targetDir -Force
+            }
+            # Copy platform plugin
+            mkdir "$targetDir\platforms" -Force
+            Copy-Item "$qtPath\plugins\platforms\qwindows.dll" -Destination "$targetDir\platforms\" -Force
+          }
         shell: pwsh
 
       - name: Upload artifacts
