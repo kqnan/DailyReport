@@ -49,11 +49,10 @@ jobs:
 
       - name: Install Qt (Windows)
         if: matrix.os == 'windows-latest'
-        uses: jurplel/install-qt@v4
-        with:
-          version: '6.6.3'
-          targets: 'qtbase qttools'
-          install-deps: 'true'
+        run: |
+          # Install Qt 6.6 using Chocolatey with correct package name
+          choco install qt6 --version=6.6.3 -y
+        shell: pwsh
 
       - name: Install Qt (macOS)
         if: matrix.os == 'macos-latest'
