@@ -76,12 +76,13 @@ jobs:
       - name: Deploy Qt dependencies
         run: |
           # Copy Qt DLLs to build directory
-          $qt安装路径 = $env:QT_INSTALL_DIR
+          $qt-installer-path = $env:QT_INSTALL_DIR
+          Write-Host "Qt install dir: $qt-installer-path"
           $targetDir = "build/Release"
           mkdir $targetDir -Force
-          Copy-Item "$qt安装路径\bin\Qt6Core.dll" -Destination $targetDir -Force
-          Copy-Item "$qt安装路径\bin\Qt6Widgets.dll" -Destination $targetDir -Force
-          Copy-Item "$qt安装路径\bin\Qt6Gui.dll" -Destination $targetDir -Force
+          Copy-Item "${qt-installer-path}\bin\Qt6Core.dll" -Destination $targetDir -Force
+          Copy-Item "${qt-installer-path}\bin\Qt6Widgets.dll" -Destination $targetDir -Force
+          Copy-Item "${qt-installer-path}\bin\Qt6Gui.dll" -Destination $targetDir -Force
         shell: pwsh
 
       - name: Upload artifacts
