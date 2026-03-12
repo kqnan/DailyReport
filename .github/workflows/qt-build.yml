@@ -46,3 +46,84 @@ jobs:
           path: |
             build/DailyReport
             package/linux/DailyReport
+
+  build-qt-windows:
+    name: Build Qt App on Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt@v4
+        with:
+          version: '6.4.3'
+          args: '--donotinstallupdatedcomponents'
+
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake -G "Visual Studio 17 2022" ..
+        shell: pwsh
+
+      - name: Build
+        run: |
+          cmake --build build --config Release
+        shell: pwsh
+
+      - name: Deploy Qt dependencies
+        run: |
+          # Copy Qt DLLs to build directory
+          $qt安装路径 = $env:QT_INSTALL_DIR
+          $targetDir = "build/Release"
+          mkdir $targetDir -Force
+          Copy-Item "$qt安装路径\bin\Qt6Core.dll" -Destination $targetDir -Force
+          Copy-Item "$qt安装路径\bin\Qt6Widgets.dll" -Destination $targetDir -Force
+          Copy-Item "$qt安装路径\bin\Qt6Gui.dll" -Destination $targetDir -Force
+        shell: pwsh
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-build-windows
+          path: |
+            build/DailyReport.exe
+            build/Release/*.dll
+
+  build-qt-macos:
+    name: Build Qt App on macOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt@v4
+        with:
+          version: '6.4.3'
+          args: '--donotinstallupdatedcomponents'
+
+      - name: Configure CMake
+        run: |
+          mkdir -p build
+          cd build
+          cmake ..
+
+      - name: Build
+        run: |
+          cmake --build build
+
+      - name: Deploy Qt dependencies
+        run: |
+          # TODO: Implement macOS deployment
+          echo "macOS deployment not implemented yet"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-build-macos
+          path: |
+            build/DailyReport
