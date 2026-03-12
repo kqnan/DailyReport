@@ -40,7 +40,8 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install frontend dependencies
-        run: cd frontend && npm install
+        run: npm install
+        working-directory: frontend
 
       - name: Build Tauri App
         uses: tauri-apps/tauri-action@v0
