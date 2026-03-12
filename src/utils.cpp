@@ -21,9 +21,10 @@ QString getStorageDirectory() {
 }
 
 QString getFilenameForDate(const QString &date) {
-    // date: "2026-03-12" -> "sessions_2026_03.json"
-    QString yearMonth = date.left(7).replace("-", "_");
-    return QString("sessions_%1.json").arg(yearMonth);
+    // date: "2026-03-12" -> "sessions_2026_03_12.json"
+    QString yearMonthDay = date;
+    yearMonthDay.replace("-", "_");
+    return QString("sessions_%1.json").arg(yearMonthDay);
 }
 
 QString getCurrentDate() {

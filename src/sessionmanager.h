@@ -20,11 +20,13 @@ public:
     DailyStatistics getTodayStatistics();
     DailyStatistics getStatisticsForDate(const QString &date);
 
+    // Testing methods
+    QString getFilenameForDate(const QString &date) const;
+
 private:
     SessionManager() = default;
 
     QString getStorageDir() const;
-    QString getFilenameForDate(const QString &date) const;
     QList<WorkSession> loadFromFile(const QString &filepath);
     void saveToFile(const QString &filepath, const QList<WorkSession> &sessions);
 };

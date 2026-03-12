@@ -19,9 +19,10 @@ QString SessionManager::getStorageDir() const {
 }
 
 QString SessionManager::getFilenameForDate(const QString &date) const {
-    // date: "2026-03-12" -> "sessions_2026_03.json"
-    QString yearMonth = date.left(7).replace("-", "_");
-    return QString("sessions_%1.json").arg(yearMonth);
+    // date: "2026-03-12" -> "sessions_2026_03_12.json"
+    QString yearMonthDay = date;
+    yearMonthDay.replace("-", "_");
+    return QString("sessions_%1.json").arg(yearMonthDay);
 }
 
 QList<WorkSession> SessionManager::loadSessions(const QString &date) {
@@ -123,14 +124,10 @@ QList<QString> SessionManager::getAvailableDates() {
     QFileInfoList files = dir.entryInfoList(QStringList("sessions_*.json"), QDir::Files);
     for (const QFileInfo &info : files) {
         QString filename = info.fileName();
-        // Extract date from "sessions_2026_03.json"
+        // Extract date from "sessions_2026_03_12.json"
         QString datePart = filename.remove("sessions_").remove(".json").replace("_", "-");
-        // Generate all dates for this month
-        QString year = datePart.left(4);
-        QString month = datePart.mid(5, 2);
-        for (int day = 1; day <= 31; ++day) {
-            dates.append(QString("%1-%2-%3").arg(year).arg(month).arg(day, 2, 10, QChar('0')));
-        }
+        // datePart is now "2026-03-12"
+        dates.append(datePart);
     }
 
     std::sort(dates.begin(), dates.end());
