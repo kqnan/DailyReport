@@ -92,7 +92,7 @@ jobs:
           $windeployqt = "$qtPath\bin\windeployqt.exe"
           if (Test-Path $windeployqt) {
             Write-Host "Running windeployqt..."
-            & $windeployqt --dir $targetDir $targetDir\DailyReport.exe --platform qwindows
+            & $windeployqt --dir $targetDir $targetDir\DailyReport.exe
           } else {
             Write-Host "windeployqt not found, using manual copy..."
             Copy-Item "$qtPath\bin\Qt6Core.dll" -Destination $targetDir -Force
