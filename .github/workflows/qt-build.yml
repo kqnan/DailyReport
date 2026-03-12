@@ -31,7 +31,10 @@ jobs:
 
       - name: Setup C++ compiler (Windows)
         if: matrix.os == 'windows-latest'
-        uses: ilammy/setup-ninja@v1
+        run: |
+          # Ninja is pre-installed on Windows GitHub Actions
+          ninja --version
+        shell: pwsh
 
       - name: Setup C++ compiler (macOS)
         if: matrix.os == 'macos-latest'
