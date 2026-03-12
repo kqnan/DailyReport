@@ -49,23 +49,10 @@ jobs:
 
       - name: Install Qt (Windows)
         if: matrix.os == 'windows-latest'
-        run: |
-          # Download Qt 6.6.3 installer
-          $installerPath = "$env:TEMP\qt-installer.exe"
-          Write-Host "Downloading Qt installer..."
-          Invoke-WebRequest -Uri "https://download.qt.io/archive/qt/6.6/6.6.3/qt-opensource-windows-x64-6.6.3.exe" -OutFile $installerPath
-
-          # Install silently
-          Write-Host "Installing Qt..."
-          Start-Process -FilePath $installerPath -ArgumentList "/silent", "/S" -Wait -PassThru
-
-          # Verify installation
-          if (Test-Path "C:\Qt\6.6.3\msvc2019_64\bin\qmake.exe") {
-            Write-Host "Qt installed successfully"
-          } else {
-            Write-Host "Qt installation check - files may be in different location"
-          }
-        shell: pwsh
+        uses: jurplel/install-qt@v3
+        with:
+          version: '6.5.2'
+          args: '--only亟e-none'
 
       - name: Install Qt (macOS)
         if: matrix.os == 'macos-latest'
