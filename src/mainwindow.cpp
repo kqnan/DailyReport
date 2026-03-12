@@ -108,8 +108,9 @@ void MainWindow::initUI() {
 void MainWindow::onStartShift() {
     SessionManager &mgr = SessionManager::instance();
 
-    // Check for existing active session
-    WorkSession existing = mgr.getActiveSession();
+    // Check for existing active session in selected date
+    QString selectedDate = dateEdit->date().toString("yyyy-MM-dd");
+    WorkSession existing = mgr.getActiveSessionForDate(selectedDate);
     if (!existing.id.isEmpty()) {
         QMessageBox::warning(this, "错误", "已经有进行中的上班记录，请先下班");
         return;
@@ -118,7 +119,7 @@ void MainWindow::onStartShift() {
     // Create new session
     WorkSession session;
     session.id = QUuid::createUuid().toString().mid(1, 36);
-    session.date = getCurrentDate();
+    session.date = selectedDate;
     session.startTime = QDateTime::currentDateTime().toString(Qt::ISODate);
     session.endTime = "";
     session.durationHours = 0;

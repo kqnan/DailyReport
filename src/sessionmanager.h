@@ -16,6 +16,7 @@ public:
     QList<QString> getAvailableDates();
     QList<WorkSession> getTodaySessions();
     WorkSession getActiveSession();
+    WorkSession getActiveSessionForDate(const QString &date);
     DailyStatistics getTodayStatistics();
     DailyStatistics getStatisticsForDate(const QString &date);
 

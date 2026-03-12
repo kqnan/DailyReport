@@ -149,6 +149,14 @@ WorkSession SessionManager::getActiveSession() {
     return WorkSession();
 }
 
+WorkSession SessionManager::getActiveSessionForDate(const QString &date) {
+    QList<WorkSession> sessions = loadSessions(date);
+    for (const WorkSession &s : sessions) {
+        if (s.isActive()) return s;
+    }
+    return WorkSession();
+}
+
 DailyStatistics SessionManager::getTodayStatistics() {
     QList<WorkSession> sessions = getTodaySessions();
     DailyStatistics stat;
