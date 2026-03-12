@@ -56,7 +56,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Qt
-        uses: jurplel/install-qt@v4
+        uses: jurplel/install-qt-action@v4
         with:
           version: '6.4.3'
           args: '--donotinstallupdatedcomponents'
@@ -101,10 +101,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Qt
-        uses: jurplel/install-qt@v4
-        with:
-          version: '6.4.3'
-          args: '--donotinstallupdatedcomponents'
+        run: |
+          brew install qt@6
 
       - name: Configure CMake
         run: |
