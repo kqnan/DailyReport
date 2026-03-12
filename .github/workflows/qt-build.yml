@@ -84,6 +84,9 @@ jobs:
           Copy-Item "$qtPath\bin\Qt6Widgets.dll" -Destination $targetDir -Force
           Copy-Item "$qtPath\bin\Qt6Gui.dll" -Destination $targetDir -Force
           Copy-Item "$qtPath\bin\Qt6Network.dll" -Destination $targetDir -Force
+          # Copy SSL DLLs for HTTPS support
+          Copy-Item "$qtPath\bin\libcrypto-3.dll" -Destination $targetDir -Force
+          Copy-Item "$qtPath\bin\libssl-3.dll" -Destination $targetDir -Force
           # Copy platform plugin
           mkdir "$targetDir\platforms" -Force
           Copy-Item "$qtPath\plugins\platforms\qwindows.dll" -Destination "$targetDir\platforms\" -Force
