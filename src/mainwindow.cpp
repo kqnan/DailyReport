@@ -11,6 +11,7 @@
 #include <QComboBox>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -223,24 +224,31 @@ void MainWindow::loadSessions(const QString &date) {
         QString timeRange = session.startTime.mid(11, 5) + " - " +
                            (session.endTime.isEmpty() ? "进行中" : session.endTime.mid(11, 5));
 
+        // Create custom widget with vertical layout to avoid overlapping
+        QWidget *itemWidget = new QWidget();
+        QVBoxLayout *itemLayout = new QVBoxLayout(itemWidget);
+        itemLayout->setContentsMargins(0, 0, 0, 0);
+        itemLayout->setSpacing(2);
+
+        // First line: time range, duration, work type
         QString text = QString("%1  %2  %3")
             .arg(timeRange)
             .arg(formatDuration(session.durationHours))
             .arg(session.workType);
+        QLabel *timeLabel = new QLabel(text);
+        timeLabel->setStyleSheet("font-size: 14px;");
 
-        QListWidgetItem *item = new QListWidgetItem(text);
-        item->setData(Qt::UserRole, session.id);
-
-        // Add edit and delete buttons for this item
-        QWidget *itemWidget = new QWidget();
-        QHBoxLayout *itemLayout = new QHBoxLayout(itemWidget);
-        itemLayout->setContentsMargins(0, 0, 0, 0);
-
+        // Second line: activity description
         QLabel *activityLabel = new QLabel(session.activity != "工作片段" ? session.activity : "无描述");
         activityLabel->setStyleSheet("color: #6b7280; font-size: 12px;");
 
+        itemLayout->addWidget(timeLabel);
         itemLayout->addWidget(activityLabel);
         itemWidget->setLayout(itemLayout);
+
+        QListWidgetItem *item = new QListWidgetItem();
+        item->setData(Qt::UserRole, session.id);
+        item->setSizeHint(itemWidget->sizeHint());
 
         sessionListWidget->addItem(item);
         sessionListWidget->setItemWidget(item, itemWidget);
