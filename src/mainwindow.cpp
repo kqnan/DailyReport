@@ -12,17 +12,28 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QVBoxLayout>
+#include <QNetworkAccessManager>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , activeSession(nullptr)
+    , apiManager(&ApiManager::instance())
 {
     initUI();
     loadSessions(getCurrentDate());
+    setupApiConnections();
 }
 
 MainWindow::~MainWindow() {
     delete activeSession;
+}
+
+void MainWindow::setupApiConnections() {
+    connect(apiManager, &ApiManager::dailyReportListReceived, this, &MainWindow::onDailyReportListReceived);
+    connect(apiManager, &ApiManager::dailyReportDetailsReceived, this, [this](const QJsonArray& tasks) {
+        // Handle daily report details
+        qDebug() << "Received" << tasks.size() << "tasks";
+    });
 }
 
 void MainWindow::initUI() {
@@ -41,6 +52,9 @@ void MainWindow::initUI() {
     exportJsonButton = new QPushButton("📥 导出 JSON");
     todayButton = new QPushButton("今天");
     openFolderButton = new QPushButton("📂 打开记录文件夹");
+    loginButton = new QPushButton("🔐 登录");
+
+    statusLabel = new QLabel("状态: 未登录");
 
     totalHoursLabel = new QLabel("0小时");
     sessionCountLabel = new QLabel("0 段");
@@ -92,6 +106,12 @@ void MainWindow::initUI() {
     exportLayout->addWidget(openFolderButton);
     mainLayout->addLayout(exportLayout);
 
+    // Status label and login button
+    QHBoxLayout *statusLayout = new QHBoxLayout();
+    statusLayout->addWidget(statusLabel);
+    statusLayout->addWidget(loginButton);
+    mainLayout->addLayout(statusLayout);
+
     // Session list
     mainLayout->addWidget(sessionListWidget);
 
@@ -109,6 +129,7 @@ void MainWindow::initUI() {
     connect(exportCsvButton, &QPushButton::clicked, this, &MainWindow::onExport);
     connect(exportJsonButton, &QPushButton::clicked, this, &MainWindow::onExport);
     connect(openFolderButton, &QPushButton::clicked, this, &MainWindow::onOpenFolder);
+    connect(loginButton, &QPushButton::clicked, this, &MainWindow::onLoginClicked);
 }
 
 void MainWindow::onStartShift() {
@@ -423,4 +444,77 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 void MainWindow::onOpenFolder() {
     QString folderPath = getStorageDirectory();
     QDesktopServices::openUrl(QUrl::fromLocalFile(folderPath));
+}
+
+void MainWindow::onLoginClicked() {
+    statusLabel->setText("状态: 获取验证码中...");
+
+    // First get verification code
+    apiManager->getVerificationCode();
+
+    // Connect to verification code received signal
+    connect(apiManager, &ApiManager::verificationCodeReceived, this, [this](int code) {
+        statusLabel->setText(QString("状态: 已获取验证码 %1").arg(code));
+
+        // Auto login with fetched code
+        apiManager->login("18578775001", "84769629aA.", QString::number(code));
+
+        connect(apiManager, &ApiManager::loginSuccess, this, [this](const QString& token) {
+            statusLabel->setText("状态: 登录成功");
+            QMessageBox::information(this, "登录成功", "登录成功！现在获取日报列表...");
+
+            // Get daily report list
+            apiManager->getDailyReportList(1, 50);
+        });
+
+        connect(apiManager, &ApiManager::loginFailed, this, [this](const QString& msg) {
+            statusLabel->setText("状态: 登录失败");
+            QMessageBox::warning(this, "登录失败", msg);
+        });
+    });
+
+    connect(apiManager, &ApiManager::verificationCodeFailed, this, [this](const QString& msg) {
+        statusLabel->setText("状态: 获取验证码失败");
+        QMessageBox::warning(this, "错误", msg);
+    });
+}
+
+void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
+    statusLabel->setText("状态: 已登录");
+    QMessageBox::information(this, "日报列表", QString("共获取 %1 条日报记录").arg(reports.size()));
+
+    // Clear current sessions and load from API data
+    sessionListWidget->clear();
+
+    for (const QJsonValue& value : reports) {
+        QJsonObject report = value.toObject();
+
+        QString date = report["dailyReportDate"].toString();
+        QString timeRange = "09:00 - 18:00"; // Default time range
+        QString duration = "8小时"; // Default duration
+        QString creator = report["creator"].toString();
+
+        QString text = QString("%1  %2  %3")
+            .arg(timeRange)
+            .arg(duration)
+            .arg(date);
+
+        QListWidgetItem *item = new QListWidgetItem(text);
+
+        // Create custom widget with vertical layout
+        QWidget *itemWidget = new QWidget();
+        QVBoxLayout *itemLayout = new QVBoxLayout(itemWidget);
+        itemLayout->setContentsMargins(0, 0, 0, 0);
+        itemLayout->setSpacing(2);
+
+        QLabel *activityLabel = new QLabel("创建人: " + creator);
+        activityLabel->setStyleSheet("color: #6b7280; font-size: 12px;");
+
+        itemLayout->addWidget(activityLabel);
+        itemWidget->setLayout(itemLayout);
+
+        item->setSizeHint(itemWidget->sizeHint());
+        sessionListWidget->addItem(item);
+        sessionListWidget->setItemWidget(item, itemWidget);
+    }
 }

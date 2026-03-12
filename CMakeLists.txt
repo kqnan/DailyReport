@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Core)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Network)
 
 # Find Qt6 installation directory
 get_target_property(Qt6CoreLocation Qt6::Core LOCATION)
@@ -33,9 +33,11 @@ add_executable(DailyReport
     src/sessionmanager.cpp
     src/utils.h
     src/utils.cpp
+    src/apimanager.h
+    src/apimanager.cpp
 )
 
-target_link_libraries(DailyReport PRIVATE Qt6::Widgets Qt6::Core)
+target_link_libraries(DailyReport PRIVATE Qt6::Widgets Qt6::Core Qt6::Network)
 
 # Copy Qt plugins for standalone executable
 if(Qt6QXcbPluginPath)

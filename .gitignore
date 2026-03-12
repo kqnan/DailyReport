@@ -21,3 +21,6 @@ build/
 # Linux
 *.AppImage
 *.deb
+
+# Backend credentials and API docs
+后端接口.md

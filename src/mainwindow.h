@@ -9,6 +9,7 @@
 #include <QVBoxLayout>
 #include "datamodel.h"
 #include "sessionmanager.h"
+#include "apimanager.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -25,6 +26,9 @@ private slots:
     void onDeleteSession();
     void onExport();
     void onOpenFolder();
+    void onLoginClicked();
+    void onDailyReportListReceived(const QJsonArray& reports);
+    void setupApiConnections();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -39,11 +43,13 @@ private:
     QPushButton *exportJsonButton;
     QPushButton *todayButton;
     QPushButton *openFolderButton;
+    QPushButton *loginButton;
 
     // Labels
     QLabel *totalHoursLabel;
     QLabel *sessionCountLabel;
     QLabel *startTimeLabel;
+    QLabel *statusLabel;
 
     // Date selector
     QDateEdit *dateEdit;
@@ -52,6 +58,9 @@ private:
     // Data
     WorkSession *activeSession;
     QList<WorkSession> currentSessions;
+
+    // API
+    ApiManager* apiManager;
 
     // Helper functions
     void initUI();
