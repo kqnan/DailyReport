@@ -79,11 +79,12 @@ jobs:
           # This handles all DLLs including the correct SSL versions
           $qtPath = $env:QT_ROOT_DIR
           Write-Host "Qt install dir: $qtPath"
-          $targetDir = "build/Release"
+          $sourceDir = "build/Release"
+          $targetDir = "qt-deploy"
           mkdir $targetDir -Force
 
-          # Copy executable first
-          Copy-Item "build\Release\DailyReport.exe" -Destination $targetDir -Force
+          # Copy executable to target directory
+          Copy-Item "$sourceDir\DailyReport.exe" -Destination $targetDir -Force
 
           # Use windeployqt for automatic dependency resolution
           # Qt 6.4.3 uses libcrypto-1_1.dll and libssl-1_1.dll
@@ -117,7 +118,7 @@ jobs:
         with:
           name: qt-build-windows
           path: |
-            build/Release/
+            qt-deploy/
 
   build-qt-macos:
     name: Build Qt App on macOS
