@@ -35,6 +35,8 @@ add_executable(DailyReport
     src/utils.cpp
     src/apimanager.h
     src/apimanager.cpp
+    src/logindialog.h
+    src/logindialog.cpp
 )
 
 target_link_libraries(DailyReport PRIVATE Qt6::Widgets Qt6::Core Qt6::Network)

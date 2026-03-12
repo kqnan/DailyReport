@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "utils.h"
+#include "logindialog.h"
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QStandardPaths>
@@ -447,36 +448,39 @@ void MainWindow::onOpenFolder() {
 }
 
 void MainWindow::onLoginClicked() {
-    statusLabel->setText("状态: 获取验证码中...");
+    LoginDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        statusLabel->setText("状态: 获取验证码中...");
 
-    // First get verification code
-    apiManager->getVerificationCode();
+        // First get verification code
+        apiManager->getVerificationCode();
 
-    // Connect to verification code received signal
-    connect(apiManager, &ApiManager::verificationCodeReceived, this, [this](int code) {
-        statusLabel->setText(QString("状态: 已获取验证码 %1").arg(code));
+        // Connect to verification code received signal
+        connect(apiManager, &ApiManager::verificationCodeReceived, this, [this, &dialog](int code) {
+            statusLabel->setText(QString("状态: 已获取验证码 %1").arg(code));
 
-        // Auto login with fetched code
-        apiManager->login("18578775001", "84769629aA.", QString::number(code));
+            // Auto login with fetched code and user input credentials
+            apiManager->login(dialog.getUserNameId(), dialog.getPassword(), QString::number(code));
 
-        connect(apiManager, &ApiManager::loginSuccess, this, [this](const QString& token) {
-            statusLabel->setText("状态: 登录成功");
-            QMessageBox::information(this, "登录成功", "登录成功！现在获取日报列表...");
+            connect(apiManager, &ApiManager::loginSuccess, this, [this](const QString& token) {
+                statusLabel->setText("状态: 登录成功");
+                QMessageBox::information(this, "登录成功", "登录成功！现在获取日报列表...");
 
-            // Get daily report list
-            apiManager->getDailyReportList(1, 50);
+                // Get daily report list
+                apiManager->getDailyReportList(1, 50);
+            });
+
+            connect(apiManager, &ApiManager::loginFailed, this, [this](const QString& msg) {
+                statusLabel->setText("状态: 登录失败");
+                QMessageBox::warning(this, "登录失败", msg);
+            });
         });
 
-        connect(apiManager, &ApiManager::loginFailed, this, [this](const QString& msg) {
-            statusLabel->setText("状态: 登录失败");
-            QMessageBox::warning(this, "登录失败", msg);
+        connect(apiManager, &ApiManager::verificationCodeFailed, this, [this](const QString& msg) {
+            statusLabel->setText("状态: 获取验证码失败");
+            QMessageBox::warning(this, "错误", msg);
         });
-    });
-
-    connect(apiManager, &ApiManager::verificationCodeFailed, this, [this](const QString& msg) {
-        statusLabel->setText("状态: 获取验证码失败");
-        QMessageBox::warning(this, "错误", msg);
-    });
+    }
 }
 
 void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
