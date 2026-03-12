@@ -1,1 +1,23 @@
 /target
+
+# Qt build artifacts
+qt-app/build/
+qt-app/*.pro.user
+qt-app/*.user
+
+# Visual Studio Code
+.vscode/
+
+# macOS
+.DS_Store
+*.app
+*.dmg
+
+# Windows
+*.exe
+*.msi
+*.log
+
+# Linux
+*.AppImage
+*.deb

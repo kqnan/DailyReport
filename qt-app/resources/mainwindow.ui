@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>工时记录</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="titleLabel">
+      <property name="text">
+       <string>工时记录</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="statBox">
+      <property name="title">
+       <string/>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLabel" name="statLabel">
+         <property name="text">
+          <string>今日已工作: </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="totalHoursLabel">
+         <property name="text">
+          <string>0小时</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="sessionCountLabel">
+         <property name="text">
+          <string>上班片段: 0 段</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="controlBox">
+      <property name="title">
+       <string/>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="startButton">
+         <property name="text">
+          <string>🟢 上班</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="endButton">
+         <property name="text">
+          <string>🔴 下班</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="startTimeLabel">
+      <property name="text">
+       <string>开始时间: -</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="dateBox">
+      <property name="title">
+       <string/>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="dateLabel">
+         <property name="text">
+          <string>选择日期: </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDateEdit" name="dateEdit">
+         <property name="calendarPopup">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="todayButton">
+         <property name="text">
+          <string>今天</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="exportBox">
+      <property name="title">
+       <string/>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QPushButton" name="exportCsvButton">
+         <property name="text">
+          <string>📥 导出 CSV</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="exportJsonButton">
+         <property name="text">
+          <string>📥 导出 JSON</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QListWidget" name="sessionListWidget"/>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>startButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onStartShift()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>299</x>
+     <y>174</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>endButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onEndShift()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>299</x>
+     <y>174</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dateEdit</sender>
+   <signal>dateChanged(QDate)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onDateChanged(QDate)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>299</x>
+     <y>249</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>todayButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onTodayClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>569</x>
+     <y>249</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sessionListWidget</sender>
+   <signal>itemActivated(QListWidgetItem*)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onEditSession()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>299</x>
+     <y>419</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>exportCsvButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onExport()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>299</x>
+     <y>349</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>exportJsonButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onExport()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>299</x>
+     <y>349</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onStartShift()</slot>
+  <slot>onEndShift()</slot>
+  <slot>onDateChanged(QDate)</slot>
+  <slot>onTodayClicked()</slot>
+  <slot>onEditSession()</slot>
+  <slot>onDeleteSession()</slot>
+  <slot>onExport()</slot>
+ </slots>
+</ui>
