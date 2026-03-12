@@ -90,8 +90,7 @@ jobs:
         with:
           name: qt-build-windows
           path: |
-            build/DailyReport.exe
-            build/Release/*.dll
+            build/Release/
 
   build-qt-macos:
     name: Build Qt App on macOS
