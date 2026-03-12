@@ -139,7 +139,7 @@ jobs:
         with:
           version: '6.4.3'
           target: android
-          modules: 'qtbase qtdeclarative qttools'
+          arch: android_arm64_v8a
           install-deps: true
 
       - name: Configure CMake
