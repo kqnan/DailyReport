@@ -221,11 +221,11 @@ void ApiManager::createDailyReport(const QString& applicantId, const QString& ap
         if (statusCode == 200) {
             QString message = obj["message"].toString();
             qDebug() << "创建日报API成功:" << message;
-            // Emit dailyReportCreated with message (which contains the new UUID)
             emit dailyReportCreated(message, "创建成功");
         } else {
-            qDebug() << "创建日报API失败:" << obj["message"].toString();
-            emit dailyReportListFailed(obj["message"].toString());
+            QString errorMsg = obj["message"].toString();
+            qDebug() << "创建日报API失败:" << errorMsg;
+            emit dailyReportCreateFailed(errorMsg);
         }
 
         reply->deleteLater();
