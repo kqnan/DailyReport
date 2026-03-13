@@ -604,3 +604,16 @@ void MainWindow::onDailyReportCreated(const QString& message, const QString& sta
     // If we can't extract UUID, just log the issue
     qDebug() << "无法从响应中提取UUID，请检查API响应格式:" << message;
 }
+
+void MainWindow::onDailyReportCreateFailed(const QString& error) {
+    qDebug() << "日报创建失败:" << error;
+
+    // Check if it's "already exists" error
+    if (error.contains("已存在") || error.contains("重复")) {
+        qDebug() << "日报已存在，重新获取列表...";
+        apiManager->getDailyReportList(1, 50);
+    } else {
+        // Other error, show to user
+        QMessageBox::warning(this, "同步失败", error);
+    }
+}
