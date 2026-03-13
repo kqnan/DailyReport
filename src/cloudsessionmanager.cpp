@@ -176,7 +176,8 @@ QList<WorkSession> CloudSessionManager::getSessions(const QString& date) const {
         session.id = record.uuid;
         session.date = record.date;
         session.startTime = "";  // Not stored in cloud
-        session.endTime = "";
+        // Synced records are completed (have end time), unsynced are active
+        session.endTime = record.isSynced ? "synced" : "";
         session.durationHours = record.workingHours;
         session.activity = record.taskDescription;
         session.workType = "开发";  // Default work type

@@ -356,6 +356,54 @@ private slots:
         QCOMPARE(active.id, QString("active-uuid"));
         QVERIFY(active.endTime.isEmpty());
     }
+
+    // Test: Synced records should NOT be active (have endTime set)
+    void test_synced_records_not_active() {
+        CloudSessionManager& mgr = CloudSessionManager::instance();
+        mgr.clearBuffer();
+
+        QJsonArray tasks;
+        QJsonObject task1;
+        task1["uuid"] = "synced-task-1";
+        task1["taskDescription"] = "已同步的任务";
+        task1["workingHours"] = 2.0;
+        tasks.append(task1);
+
+        mgr.parseDailyReportDetails(tasks, "2026-03-13");
+
+        // Get sessions - synced records should have endTime set
+        QList<WorkSession> sessions = mgr.getSessions("2026-03-13");
+        QCOMPARE(sessions.size(), 1);
+
+        // Synced record should NOT be active
+        QVERIFY(!sessions[0].isActive());
+        // Synced record should have non-empty endTime
+        QVERIFY(!sessions[0].endTime.isEmpty());
+        QCOMPARE(sessions[0].endTime, QString("synced"));
+    }
+
+    // Test: Active sessions (added but not synced) should be active
+    void test_unsynced_records_are_active() {
+        CloudSessionManager& mgr = CloudSessionManager::instance();
+        mgr.clearBuffer();
+
+        WorkSession session;
+        session.id = "active-uuid";
+        session.date = "2026-03-13";
+        session.startTime = "2026-03-13T09:00:00";
+        session.durationHours = 1.5;
+        session.activity = "进行中的工作";
+        session.workType = "开发";
+
+        mgr.addSession(session);
+
+        QList<WorkSession> sessions = mgr.getSessions("2026-03-13");
+        QCOMPARE(sessions.size(), 1);
+
+        // Unsynced record should be active
+        QVERIFY(sessions[0].isActive());
+        QVERIFY(sessions[0].endTime.isEmpty());
+    }
 };
 
 QTEST_MAIN(TestCloudSessionManager)
