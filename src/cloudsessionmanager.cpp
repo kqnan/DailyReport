@@ -90,7 +90,12 @@ void CloudSessionManager::createTodayDailyReportIfNotExist() {
     if (todayDailyReportUuid.isEmpty()) {
         qDebug() << "创建今日日报...";
         qDebug() << "申请人:" << applicantId << ":" << applicantName;
-        qDebug() << "日期:" << today << " 月份:" << todayMonth << " 周:" << todayWeek;
+
+        // Use local calculation for month and week
+        QString month = today.left(7);  // "2026-03"
+        QString week = getCurrentDayOfWeek(today);  // "星期三"
+
+        qDebug() << "日期:" << today << " 月份:" << month << " 周:" << week;
 
         // Create empty task list for initial creation
         QList<QPair<QString, double>> tasks;
@@ -98,8 +103,8 @@ void CloudSessionManager::createTodayDailyReportIfNotExist() {
             applicantId,
             applicantName,
             today,
-            todayMonth,
-            todayWeek,
+            month,
+            week,
             tasks
         );
     }
