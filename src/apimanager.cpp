@@ -187,9 +187,14 @@ void ApiManager::createDailyReport(const QString& applicantId, const QString& ap
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     request.setRawHeader("Cookie", getCookieHeader().toUtf8());
 
+    qDebug() << "创建日报API调用:";
+    qDebug() << "  URL:" << url.toString();
+    qDebug() << "  参数:" << query.query();
+
     QNetworkReply* reply = networkManager->post(request, query.query().toUtf8());
     connect(reply, &QNetworkReply::finished, [this, reply, dailyReportDate]() {
         if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << "创建日报API失败:" << reply->errorString();
             emit dailyReportListFailed(reply->errorString());
             reply->deleteLater();
             return;
@@ -199,7 +204,12 @@ void ApiManager::createDailyReport(const QString& applicantId, const QString& ap
         QJsonParseError parseError;
         QJsonDocument doc = QJsonDocument::fromJson(response, &parseError);
 
+        // Print raw response
+        qDebug() << "创建日报API原始响应:";
+        qDebug() << doc.toJson(QJsonDocument::Indented);
+
         if (parseError.error != QJsonParseError::NoError) {
+            qDebug() << "创建日报API: 无效的JSON响应";
             emit dailyReportListFailed("Invalid JSON response");
             reply->deleteLater();
             return;
@@ -210,8 +220,11 @@ void ApiManager::createDailyReport(const QString& applicantId, const QString& ap
 
         if (statusCode == 200) {
             QString message = obj["message"].toString();
-            emit dailyReportListReceived(QJsonArray());
+            qDebug() << "创建日报API成功:" << message;
+            // Emit dailyReportCreated with message (which contains the new UUID)
+            emit dailyReportCreated(message, "创建成功");
         } else {
+            qDebug() << "创建日报API失败:" << obj["message"].toString();
             emit dailyReportListFailed(obj["message"].toString());
         }
 
@@ -229,6 +242,12 @@ QString ApiManager::getCookieHeader() const {
 void ApiManager::syncDailyReport(const QString& uuid, const QString& applicantId, const QString& applicantName,
                                  const QString& dailyReportDate, const QString& month, const QString& week,
                                  const QList<QPair<QString, double>>& tasks) {
+    qDebug() << "同步日报API调用:";
+    qDebug() << "  UUID:" << uuid;
+    qDebug() << "  申请人:" << applicantId << ":" << applicantName;
+    qDebug() << "  日期:" << dailyReportDate;
+    qDebug() << "  任务数:" << tasks.size();
+
     QUrl url("https://oa.zhilehuo.com/office/shiquOaDaily/update");
     QUrlQuery query;
     query.addQueryItem("uuid", uuid);
@@ -255,6 +274,7 @@ void ApiManager::syncDailyReport(const QString& uuid, const QString& applicantId
     QNetworkReply* reply = networkManager->post(request, query.query().toUtf8());
     connect(reply, &QNetworkReply::finished, [this, reply, uuid]() {
         if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << "同步日报API失败:" << reply->errorString();
             emit syncFailed(reply->errorString());
             reply->deleteLater();
             return;
@@ -264,7 +284,12 @@ void ApiManager::syncDailyReport(const QString& uuid, const QString& applicantId
         QJsonParseError parseError;
         QJsonDocument doc = QJsonDocument::fromJson(response, &parseError);
 
+        // Print raw response
+        qDebug() << "同步日报API原始响应:";
+        qDebug() << doc.toJson(QJsonDocument::Indented);
+
         if (parseError.error != QJsonParseError::NoError) {
+            qDebug() << "同步日报API: 无效的JSON响应";
             emit syncFailed("Invalid JSON response");
             reply->deleteLater();
             return;

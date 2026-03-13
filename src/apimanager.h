@@ -58,6 +58,10 @@ signals:
     void dailyReportDetailsReceived(const QJsonArray& tasks, const QString& date);
     void dailyReportDetailsFailed(const QString& error);
 
+    // Daily report create signals
+    void dailyReportCreated(const QString& uuid, const QString& message);
+    void dailyReportCreateFailed(const QString& error);
+
     // Sync signals
     void syncSuccess(const QString& message);
     void syncFailed(const QString& error);

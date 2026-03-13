@@ -40,6 +40,7 @@ void MainWindow::setupApiConnections() {
             loadSessions(date);
         }
     });
+    connect(apiManager, &ApiManager::dailyReportCreated, this, &MainWindow::onDailyReportCreated);
     connect(apiManager, &ApiManager::syncSuccess, this, [](const QString& message) {
         qDebug() << "同步成功:" << message;
         QMessageBox::information(nullptr, "同步成功", message);
@@ -503,11 +504,16 @@ void MainWindow::onSync() {
 }
 
 void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
-    statusLabel->setText("状态: 已登录");
     qDebug() << "获取日报列表成功，共" << reports.size() << "条记录";
+
+    // Print raw response for debugging
+    QJsonDocument doc;
+    doc.setArray(reports);
+    qDebug() << "日报列表原始响应:" << doc.toJson(QJsonDocument::Indented);
 
     // Find today's daily report
     QString today = getCurrentDate();
+    bool foundTodayReport = false;
     for (const QJsonValue& value : reports) {
         QJsonObject report = value.toObject();
         QString date = report["dailyReportDate"].toString();
@@ -521,7 +527,15 @@ void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
                 report["week"].toString()
             );
             qDebug() << "找到今日日报:" << today;
+            foundTodayReport = true;
         }
+    }
+
+    // If today's report not found, create it
+    if (!foundTodayReport) {
+        qDebug() << "今日日报不存在，尝试创建...";
+        CloudSessionManager::instance().createTodayDailyReportIfNotExist();
+        return;  // Wait for create response, then sync
     }
 
     // Load recent days' sessions (today and previous 2 days)
@@ -529,4 +543,45 @@ void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
 
     // Load today's sessions after getting the report list
     CloudSessionManager::instance().loadTodaySessions();
+
+    // Sync today's sessions if there are any unsynced sessions in buffer
+    CloudSessionManager::instance().syncToday();
+}
+
+void MainWindow::onDailyReportCreated(const QString& message, const QString& status) {
+    qDebug() << "日报创建成功:" << message << " " << status;
+
+    // Try to parse the response as JSON first to get the UUID
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(message.toUtf8(), &parseError);
+    if (parseError.error == QJsonParseError::NoError && doc.isObject()) {
+        QJsonObject obj = doc.object();
+        QString uuid = obj["uuid"].toString();
+        if (!uuid.isEmpty()) {
+            qDebug() << "从响应中提取UUID:" << uuid;
+            CloudSessionManager::instance().setTodayDailyReport(uuid,
+                CloudSessionManager::instance().getTodayMonth(),
+                CloudSessionManager::instance().getTodayWeek());
+
+            // Now sync today's sessions
+            CloudSessionManager::instance().syncToday();
+            return;
+        }
+    }
+
+    // Fallback: if message starts with "create;", extract UUID
+    if (message.startsWith("create;")) {
+        QString uuid = message.mid(7);
+        qDebug() << "从create;前缀提取UUID:" << uuid;
+        CloudSessionManager::instance().setTodayDailyReport(uuid,
+            CloudSessionManager::instance().getTodayMonth(),
+            CloudSessionManager::instance().getTodayWeek());
+
+        // Now sync today's sessions
+        CloudSessionManager::instance().syncToday();
+        return;
+    }
+
+    // If we can't extract UUID, just log the issue
+    qDebug() << "无法从响应中提取UUID，请检查API响应格式:" << message;
 }

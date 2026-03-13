@@ -56,6 +56,9 @@ public:
     // Sync today's sessions to server
     void syncToday();
 
+    // Sync daily report with specific UUID
+    void syncDailyReport(const QString& uuid, const QString& date);
+
     // Create today's daily report if not exists
     void createTodayDailyReportIfNotExist();
 
@@ -82,6 +85,10 @@ public:
 
     // Clear buffer (for testing)
     void clearBuffer();
+
+    // Get today's month and week for sync
+    QString getTodayMonth() const { return todayMonth; }
+    QString getTodayWeek() const { return todayWeek; }
 
 private:
     CloudSessionManager() = default;

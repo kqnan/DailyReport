@@ -1,0 +1,428 @@
+/****************************************************************************
+** Meta object code from reading C++ file 'test_login.cpp'
+**
+** Created by: The Qt Meta Object Compiler version 68 (Qt 6.6.2)
+**
+** WARNING! All changes made in this file will be lost!
+*****************************************************************************/
+
+#include <QtCore/qmetatype.h>
+
+#if __has_include(<QtCore/qtmochelpers.h>)
+#include <QtCore/qtmochelpers.h>
+#else
+QT_BEGIN_MOC_NAMESPACE
+#endif
+
+
+#include <memory>
+
+#if !defined(Q_MOC_OUTPUT_REVISION)
+#error "The header file 'test_login.cpp' doesn't include <QObject>."
+#elif Q_MOC_OUTPUT_REVISION != 68
+#error "This file was generated using the moc from 6.6.2. It"
+#error "cannot be used with the include files from this version of Qt."
+#error "(The moc has changed too much.)"
+#endif
+
+#ifndef Q_CONSTINIT
+#define Q_CONSTINIT
+#endif
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+QT_WARNING_DISABLE_GCC("-Wuseless-cast")
+namespace {
+
+#ifdef QT_MOC_HAS_STRINGDATA
+struct qt_meta_stringdata_CLASSTestLoginENDCLASS_t {};
+constexpr auto qt_meta_stringdata_CLASSTestLoginENDCLASS = QtMocHelpers::stringData(
+    "TestLogin",
+    "test_login_success_parses_token",
+    "",
+    "test_login_failure_non_200_status",
+    "test_login_invalid_json_response",
+    "test_login_missing_status_code",
+    "test_login_missing_message",
+    "test_verification_code_format",
+    "test_verification_code_single_digit",
+    "test_login_request_fields",
+    "test_login_request_valid_json"
+);
+#else  // !QT_MOC_HAS_STRING_DATA
+struct qt_meta_stringdata_CLASSTestLoginENDCLASS_t {
+    uint offsetsAndSizes[22];
+    char stringdata0[10];
+    char stringdata1[32];
+    char stringdata2[1];
+    char stringdata3[34];
+    char stringdata4[33];
+    char stringdata5[31];
+    char stringdata6[27];
+    char stringdata7[30];
+    char stringdata8[36];
+    char stringdata9[26];
+    char stringdata10[30];
+};
+#define QT_MOC_LITERAL(ofs, len) \
+    uint(sizeof(qt_meta_stringdata_CLASSTestLoginENDCLASS_t::offsetsAndSizes) + ofs), len 
+Q_CONSTINIT static const qt_meta_stringdata_CLASSTestLoginENDCLASS_t qt_meta_stringdata_CLASSTestLoginENDCLASS = {
+    {
+        QT_MOC_LITERAL(0, 9),  // "TestLogin"
+        QT_MOC_LITERAL(10, 31),  // "test_login_success_parses_token"
+        QT_MOC_LITERAL(42, 0),  // ""
+        QT_MOC_LITERAL(43, 33),  // "test_login_failure_non_200_st..."
+        QT_MOC_LITERAL(77, 32),  // "test_login_invalid_json_response"
+        QT_MOC_LITERAL(110, 30),  // "test_login_missing_status_code"
+        QT_MOC_LITERAL(141, 26),  // "test_login_missing_message"
+        QT_MOC_LITERAL(168, 29),  // "test_verification_code_format"
+        QT_MOC_LITERAL(198, 35),  // "test_verification_code_single..."
+        QT_MOC_LITERAL(234, 25),  // "test_login_request_fields"
+        QT_MOC_LITERAL(260, 29)   // "test_login_request_valid_json"
+    },
+    "TestLogin",
+    "test_login_success_parses_token",
+    "",
+    "test_login_failure_non_200_status",
+    "test_login_invalid_json_response",
+    "test_login_missing_status_code",
+    "test_login_missing_message",
+    "test_verification_code_format",
+    "test_verification_code_single_digit",
+    "test_login_request_fields",
+    "test_login_request_valid_json"
+};
+#undef QT_MOC_LITERAL
+#endif // !QT_MOC_HAS_STRING_DATA
+} // unnamed namespace
+
+Q_CONSTINIT static const uint qt_meta_data_CLASSTestLoginENDCLASS[] = {
+
+ // content:
+      12,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       9,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: name, argc, parameters, tag, flags, initial metatype offsets
+       1,    0,   68,    2, 0x08,    1 /* Private */,
+       3,    0,   69,    2, 0x08,    2 /* Private */,
+       4,    0,   70,    2, 0x08,    3 /* Private */,
+       5,    0,   71,    2, 0x08,    4 /* Private */,
+       6,    0,   72,    2, 0x08,    5 /* Private */,
+       7,    0,   73,    2, 0x08,    6 /* Private */,
+       8,    0,   74,    2, 0x08,    7 /* Private */,
+       9,    0,   75,    2, 0x08,    8 /* Private */,
+      10,    0,   76,    2, 0x08,    9 /* Private */,
+
+ // slots: parameters
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+
+       0        // eod
+};
+
+Q_CONSTINIT const QMetaObject TestLogin::staticMetaObject = { {
+    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
+    qt_meta_stringdata_CLASSTestLoginENDCLASS.offsetsAndSizes,
+    qt_meta_data_CLASSTestLoginENDCLASS,
+    qt_static_metacall,
+    nullptr,
+    qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSTestLoginENDCLASS_t,
+        // Q_OBJECT / Q_GADGET
+        QtPrivate::TypeAndForceComplete<TestLogin, std::true_type>,
+        // method 'test_login_success_parses_token'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_login_failure_non_200_status'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_login_invalid_json_response'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_login_missing_status_code'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_login_missing_message'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_verification_code_format'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_verification_code_single_digit'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_login_request_fields'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_login_request_valid_json'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>
+    >,
+    nullptr
+} };
+
+void TestLogin::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        auto *_t = static_cast<TestLogin *>(_o);
+        (void)_t;
+        switch (_id) {
+        case 0: _t->test_login_success_parses_token(); break;
+        case 1: _t->test_login_failure_non_200_status(); break;
+        case 2: _t->test_login_invalid_json_response(); break;
+        case 3: _t->test_login_missing_status_code(); break;
+        case 4: _t->test_login_missing_message(); break;
+        case 5: _t->test_verification_code_format(); break;
+        case 6: _t->test_verification_code_single_digit(); break;
+        case 7: _t->test_login_request_fields(); break;
+        case 8: _t->test_login_request_valid_json(); break;
+        default: ;
+        }
+    }
+    (void)_a;
+}
+
+const QMetaObject *TestLogin::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *TestLogin::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_CLASSTestLoginENDCLASS.stringdata0))
+        return static_cast<void*>(this);
+    return QObject::qt_metacast(_clname);
+}
+
+int TestLogin::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QObject::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 9)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 9;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 9)
+            *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
+        _id -= 9;
+    }
+    return _id;
+}
+namespace {
+
+#ifdef QT_MOC_HAS_STRINGDATA
+struct qt_meta_stringdata_CLASSTestCloudSessionManagerENDCLASS_t {};
+constexpr auto qt_meta_stringdata_CLASSTestCloudSessionManagerENDCLASS = QtMocHelpers::stringData(
+    "TestCloudSessionManager",
+    "initTestCase",
+    "",
+    "cleanupTestCase",
+    "test_instance_returns_singleton",
+    "test_addSession_adds_record_to_buffer",
+    "test_getSessions_returns_sessions_for_date",
+    "test_getSessions_returns_empty_for_nonexistent_date",
+    "test_updateSession_updates_existing_record",
+    "test_deleteSession_removes_record",
+    "test_parseDailyReportDetails_parses_json_array_for_date",
+    "test_synced_records_not_active",
+    "test_unsynced_records_are_active",
+    "test_getSessionCount_returns_correct_count"
+);
+#else  // !QT_MOC_HAS_STRING_DATA
+struct qt_meta_stringdata_CLASSTestCloudSessionManagerENDCLASS_t {
+    uint offsetsAndSizes[28];
+    char stringdata0[24];
+    char stringdata1[13];
+    char stringdata2[1];
+    char stringdata3[16];
+    char stringdata4[32];
+    char stringdata5[38];
+    char stringdata6[43];
+    char stringdata7[52];
+    char stringdata8[43];
+    char stringdata9[34];
+    char stringdata10[56];
+    char stringdata11[31];
+    char stringdata12[33];
+    char stringdata13[43];
+};
+#define QT_MOC_LITERAL(ofs, len) \
+    uint(sizeof(qt_meta_stringdata_CLASSTestCloudSessionManagerENDCLASS_t::offsetsAndSizes) + ofs), len 
+Q_CONSTINIT static const qt_meta_stringdata_CLASSTestCloudSessionManagerENDCLASS_t qt_meta_stringdata_CLASSTestCloudSessionManagerENDCLASS = {
+    {
+        QT_MOC_LITERAL(0, 23),  // "TestCloudSessionManager"
+        QT_MOC_LITERAL(24, 12),  // "initTestCase"
+        QT_MOC_LITERAL(37, 0),  // ""
+        QT_MOC_LITERAL(38, 15),  // "cleanupTestCase"
+        QT_MOC_LITERAL(54, 31),  // "test_instance_returns_singleton"
+        QT_MOC_LITERAL(86, 37),  // "test_addSession_adds_record_t..."
+        QT_MOC_LITERAL(124, 42),  // "test_getSessions_returns_sess..."
+        QT_MOC_LITERAL(167, 51),  // "test_getSessions_returns_empt..."
+        QT_MOC_LITERAL(219, 42),  // "test_updateSession_updates_ex..."
+        QT_MOC_LITERAL(262, 33),  // "test_deleteSession_removes_re..."
+        QT_MOC_LITERAL(296, 55),  // "test_parseDailyReportDetails_..."
+        QT_MOC_LITERAL(352, 30),  // "test_synced_records_not_active"
+        QT_MOC_LITERAL(383, 32),  // "test_unsynced_records_are_active"
+        QT_MOC_LITERAL(416, 42)   // "test_getSessionCount_returns_..."
+    },
+    "TestCloudSessionManager",
+    "initTestCase",
+    "",
+    "cleanupTestCase",
+    "test_instance_returns_singleton",
+    "test_addSession_adds_record_to_buffer",
+    "test_getSessions_returns_sessions_for_date",
+    "test_getSessions_returns_empty_for_nonexistent_date",
+    "test_updateSession_updates_existing_record",
+    "test_deleteSession_removes_record",
+    "test_parseDailyReportDetails_parses_json_array_for_date",
+    "test_synced_records_not_active",
+    "test_unsynced_records_are_active",
+    "test_getSessionCount_returns_correct_count"
+};
+#undef QT_MOC_LITERAL
+#endif // !QT_MOC_HAS_STRING_DATA
+} // unnamed namespace
+
+Q_CONSTINIT static const uint qt_meta_data_CLASSTestCloudSessionManagerENDCLASS[] = {
+
+ // content:
+      12,       // revision
+       0,       // classname
+       0,    0, // classinfo
+      12,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: name, argc, parameters, tag, flags, initial metatype offsets
+       1,    0,   86,    2, 0x08,    1 /* Private */,
+       3,    0,   87,    2, 0x08,    2 /* Private */,
+       4,    0,   88,    2, 0x08,    3 /* Private */,
+       5,    0,   89,    2, 0x08,    4 /* Private */,
+       6,    0,   90,    2, 0x08,    5 /* Private */,
+       7,    0,   91,    2, 0x08,    6 /* Private */,
+       8,    0,   92,    2, 0x08,    7 /* Private */,
+       9,    0,   93,    2, 0x08,    8 /* Private */,
+      10,    0,   94,    2, 0x08,    9 /* Private */,
+      11,    0,   95,    2, 0x08,   10 /* Private */,
+      12,    0,   96,    2, 0x08,   11 /* Private */,
+      13,    0,   97,    2, 0x08,   12 /* Private */,
+
+ // slots: parameters
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+
+       0        // eod
+};
+
+Q_CONSTINIT const QMetaObject TestCloudSessionManager::staticMetaObject = { {
+    QMetaObject::SuperData::link<QObject::staticMetaObject>(),
+    qt_meta_stringdata_CLASSTestCloudSessionManagerENDCLASS.offsetsAndSizes,
+    qt_meta_data_CLASSTestCloudSessionManagerENDCLASS,
+    qt_static_metacall,
+    nullptr,
+    qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSTestCloudSessionManagerENDCLASS_t,
+        // Q_OBJECT / Q_GADGET
+        QtPrivate::TypeAndForceComplete<TestCloudSessionManager, std::true_type>,
+        // method 'initTestCase'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'cleanupTestCase'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_instance_returns_singleton'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_addSession_adds_record_to_buffer'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_getSessions_returns_sessions_for_date'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_getSessions_returns_empty_for_nonexistent_date'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_updateSession_updates_existing_record'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_deleteSession_removes_record'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_parseDailyReportDetails_parses_json_array_for_date'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_synced_records_not_active'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_unsynced_records_are_active'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'test_getSessionCount_returns_correct_count'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>
+    >,
+    nullptr
+} };
+
+void TestCloudSessionManager::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        auto *_t = static_cast<TestCloudSessionManager *>(_o);
+        (void)_t;
+        switch (_id) {
+        case 0: _t->initTestCase(); break;
+        case 1: _t->cleanupTestCase(); break;
+        case 2: _t->test_instance_returns_singleton(); break;
+        case 3: _t->test_addSession_adds_record_to_buffer(); break;
+        case 4: _t->test_getSessions_returns_sessions_for_date(); break;
+        case 5: _t->test_getSessions_returns_empty_for_nonexistent_date(); break;
+        case 6: _t->test_updateSession_updates_existing_record(); break;
+        case 7: _t->test_deleteSession_removes_record(); break;
+        case 8: _t->test_parseDailyReportDetails_parses_json_array_for_date(); break;
+        case 9: _t->test_synced_records_not_active(); break;
+        case 10: _t->test_unsynced_records_are_active(); break;
+        case 11: _t->test_getSessionCount_returns_correct_count(); break;
+        default: ;
+        }
+    }
+    (void)_a;
+}
+
+const QMetaObject *TestCloudSessionManager::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *TestCloudSessionManager::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_meta_stringdata_CLASSTestCloudSessionManagerENDCLASS.stringdata0))
+        return static_cast<void*>(this);
+    return QObject::qt_metacast(_clname);
+}
+
+int TestCloudSessionManager::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QObject::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 12)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 12;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 12)
+            *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
+        _id -= 12;
+    }
+    return _id;
+}
+QT_WARNING_POP

@@ -29,6 +29,7 @@ private slots:
     void onOpenFolder();
     void onLoginClicked();
     void onDailyReportListReceived(const QJsonArray& reports);
+    void onDailyReportCreated(const QString& message, const QString& status);
     void onSync();
     void setupApiConnections();
 

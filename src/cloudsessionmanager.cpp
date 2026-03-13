@@ -77,12 +77,13 @@ void CloudSessionManager::loadRecentDaysSessions(int days) {
 void CloudSessionManager::createTodayDailyReportIfNotExist() {
     QString today = getCurrentDate();
     if (todayDailyReportUuid.isEmpty()) {
-        qDebug() << "创建今日日报(UUID: " << todayDailyReportUuid << ")...";
+        qDebug() << "创建今日日报...";
+        qDebug() << "申请人:" << applicantId << ":" << applicantName;
+        qDebug() << "日期:" << today << " 月份:" << todayMonth << " 周:" << todayWeek;
 
         // Create empty task list for initial creation
         QList<QPair<QString, double>> tasks;
-        // We need to sync to get the actual uuid after creation
-       ApiManager::instance().createDailyReport(
+        ApiManager::instance().createDailyReport(
             applicantId,
             applicantName,
             today,
@@ -141,26 +142,33 @@ void CloudSessionManager::syncToday() {
         return;
     }
 
-    // If daily report UUID not set, create it first
-    if (todayDailyReportUuid.isEmpty()) {
-        qDebug() << "日报UUID未设置，先创建今日日报...";
-        createTodayDailyReportIfNotExist();
+    // Simple approach: if daily report UUID already set, directly sync
+    if (!todayDailyReportUuid.isEmpty()) {
+        qDebug() << "使用已设置的日报UUID同步:" << todayDailyReportUuid;
+        syncDailyReport(todayDailyReportUuid, today);
         return;
     }
 
-    qDebug() << "正在同步今天" << buffer[today].size() << "条会话到云端...";
+    // UUID not set, need to check if daily report exists by calling list API
+    qDebug() << "日报UUID未设置，检查今日日报是否存在...";
+    ApiManager::instance().getDailyReportList(1, 50);
+}
 
-    // Create task list for today
+void CloudSessionManager::syncDailyReport(const QString& uuid, const QString& date) {
+    qDebug() << "正在同步" << date << buffer[date].size() << "条会话到云端...";
+    qDebug() << "日报UUID:" << uuid;
+
+    // Create task list
     QList<QPair<QString, double>> tasks;
-    for (const auto& record : buffer[today]) {
+    for (const auto& record : buffer[date]) {
         tasks.append(qMakePair(record.taskDescription, record.workingHours));
     }
 
     ApiManager::instance().syncDailyReport(
-        todayDailyReportUuid,
+        uuid,
         applicantId,
         applicantName,
-        today,
+        date,
         todayMonth,
         todayWeek,
         tasks
