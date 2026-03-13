@@ -41,6 +41,7 @@ void MainWindow::setupApiConnections() {
         }
     });
     connect(apiManager, &ApiManager::dailyReportCreated, this, &MainWindow::onDailyReportCreated);
+    connect(apiManager, &ApiManager::dailyReportCreateFailed, this, &MainWindow::onDailyReportCreateFailed);
     connect(apiManager, &ApiManager::syncSuccess, this, [](const QString& message) {
         qDebug() << "同步成功:" << message;
         QMessageBox::information(nullptr, "同步成功", message);
