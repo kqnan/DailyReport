@@ -602,8 +602,12 @@ void MainWindow::onDailyReportCreated(const QString& message, const QString& sta
         return;
     }
 
-    // If we can't extract UUID, just log the issue
-    qDebug() << "无法从响应中提取UUID，请检查API响应格式:" << message;
+    // If we can't extract UUID, the API created the report but didn't return it.
+    // Call getDailyReportList to fetch the newly created report and get its UUID.
+    // This prevents an infinite loop when the first creation succeeds but response
+    // doesn't contain UUID, and subsequent sync attempts find "report already exists".
+    qDebug() << "创建成功但未返回UUID，获取日报列表以提取新创建的日报...";
+    apiManager->getDailyReportList(1, 50);
 }
 
 void MainWindow::onDailyReportCreateFailed(const QString& error) {
