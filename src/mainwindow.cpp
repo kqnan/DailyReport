@@ -449,76 +449,46 @@ void MainWindow::onOpenFolder() {
 
 void MainWindow::onLoginClicked() {
     LoginDialog dialog(this);
-    if (dialog.exec() == QDialog::Accepted) {
+    connect(&dialog, &QDialog::accepted, this, [this, &dialog]() {
         statusLabel->setText("状态: 获取验证码中...");
 
-        // First get verification code
+        // Get verification code
         apiManager->getVerificationCode();
 
-        // Connect to verification code received signal
-        connect(apiManager, &ApiManager::verificationCodeReceived, this, [this, &dialog](int code) {
+        // Use SingleShotConnection to avoid duplicate connections
+        QMetaObject::Connection verifConn = connect(apiManager, &ApiManager::verificationCodeReceived, this, [this, &dialog](int code) {
             statusLabel->setText(QString("状态: 已获取验证码 %1").arg(code));
 
             // Auto login with fetched code and user input credentials
             apiManager->login(dialog.getUserNameId(), dialog.getPassword(), QString::number(code));
-
-            connect(apiManager, &ApiManager::loginSuccess, this, [this](const QString& token) {
-                statusLabel->setText("状态: 登录成功");
-                QMessageBox::information(this, "登录成功", "登录成功！现在获取日报列表...");
-
-                // Get daily report list
-                apiManager->getDailyReportList(1, 50);
-            });
-
-            connect(apiManager, &ApiManager::loginFailed, this, [this](const QString& msg) {
-                statusLabel->setText("状态: 登录失败");
-                QMessageBox::warning(this, "登录失败", msg);
-            });
         });
 
-        connect(apiManager, &ApiManager::verificationCodeFailed, this, [this](const QString& msg) {
-            statusLabel->setText("状态: 获取验证码失败");
-            QMessageBox::warning(this, "错误", msg);
+        QMetaObject::Connection loginSuccessConn = connect(apiManager, &ApiManager::loginSuccess, this, [this](const QString& token) {
+            statusLabel->setText("状态: 登录成功");
+            qDebug() << "登录成功，token:" << token;
         });
-    }
+
+        QMetaObject::Connection loginFailedConn = connect(apiManager, &ApiManager::loginFailed, this, [this](const QString& msg) {
+            statusLabel->setText("状态: 登录失败");
+            QMessageBox::warning(this, "登录失败", msg);
+        });
+
+        // Disconnect when dialog finishes to avoid dangling connections
+        connect(&dialog, &QDialog::finished, this, [this, verifConn, loginSuccessConn, loginFailedConn]() {
+            disconnect(verifConn);
+            disconnect(loginSuccessConn);
+            disconnect(loginFailedConn);
+        });
+    });
 }
 
 void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
     statusLabel->setText("状态: 已登录");
-    QMessageBox::information(this, "日报列表", QString("共获取 %1 条日报记录").arg(reports.size()));
-
-    // Clear current sessions and load from API data
-    sessionListWidget->clear();
+    qDebug() << "获取日报列表成功，共" << reports.size() << "条记录";
 
     for (const QJsonValue& value : reports) {
         QJsonObject report = value.toObject();
-
-        QString date = report["dailyReportDate"].toString();
-        QString timeRange = "09:00 - 18:00"; // Default time range
-        QString duration = "8小时"; // Default duration
-        QString creator = report["creator"].toString();
-
-        QString text = QString("%1  %2  %3")
-            .arg(timeRange)
-            .arg(duration)
-            .arg(date);
-
-        QListWidgetItem *item = new QListWidgetItem(text);
-
-        // Create custom widget with vertical layout
-        QWidget *itemWidget = new QWidget();
-        QVBoxLayout *itemLayout = new QVBoxLayout(itemWidget);
-        itemLayout->setContentsMargins(0, 0, 0, 0);
-        itemLayout->setSpacing(2);
-
-        QLabel *activityLabel = new QLabel("创建人: " + creator);
-        activityLabel->setStyleSheet("color: #6b7280; font-size: 12px;");
-
-        itemLayout->addWidget(activityLabel);
-        itemWidget->setLayout(itemLayout);
-
-        item->setSizeHint(itemWidget->sizeHint());
-        sessionListWidget->addItem(item);
-        sessionListWidget->setItemWidget(item, itemWidget);
+        qDebug() << "日报:" << report["dailyReportDate"].toString()
+                 << "创建人:" << report["creator"].toString();
     }
 }
