@@ -404,6 +404,45 @@ private slots:
         QVERIFY(sessions[0].isActive());
         QVERIFY(sessions[0].endTime.isEmpty());
     }
+
+    // Test: parseDailyReportDetails for a specific date should NOT affect other dates
+    // This tests the bug where loading 3月11's records would overwrite 3月13's display
+    void test_parseDailyReportDetails_for_specific_date() {
+        CloudSessionManager& mgr = CloudSessionManager::instance();
+        mgr.clearBuffer();
+
+        // Add unsynced records for today (3月13)
+        WorkSession session1;
+        session1.id = "today-uuid-1";
+        session1.date = "2026-03-13";
+        session1.startTime = "2026-03-13T09:00:00";
+        session1.durationHours = 1.0;
+        session1.activity = "今天的未同步工作";
+        mgr.addSession(session1);
+
+        // Parse yesterday's (3月12) daily report details
+        QJsonArray tasks;
+        QJsonObject task1;
+        task1["uuid"] = "yesterday-task-1";
+        task1["taskDescription"] = "昨天同步的任务";
+        task1["workingHours"] = 2.0;
+        tasks.append(task1);
+
+        mgr.parseDailyReportDetails(tasks, "2026-03-12");
+
+        // Today's (3月13) sessions should not be affected
+        QList<WorkSession> todaySessions = mgr.getSessions("2026-03-13");
+        QCOMPARE(todaySessions.size(), 1);
+        QCOMPARE(todaySessions[0].id, QString("today-uuid-1"));
+        QCOMPARE(todaySessions[0].activity, QString("今天的未同步工作"));
+        QVERIFY(todaySessions[0].isActive());  // unsynced should be active
+
+        // Yesterday's (3月12) sessions should be loaded
+        QList<WorkSession> yesterdaySessions = mgr.getSessions("2026-03-12");
+        QCOMPARE(yesterdaySessions.size(), 1);
+        QCOMPARE(yesterdaySessions[0].id, QString("yesterday-task-1"));
+        QVERIFY(!yesterdaySessions[0].isActive());  // synced should not be active
+    }
 };
 
 QTEST_MAIN(TestCloudSessionManager)

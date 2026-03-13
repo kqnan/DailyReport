@@ -34,8 +34,11 @@ void MainWindow::setupApiConnections() {
     connect(apiManager, &ApiManager::dailyReportDetailsReceived, this, [this](const QJsonArray& tasks, const QString& date) {
         // Handle daily report details
         CloudSessionManager::instance().parseDailyReportDetails(tasks, date);
-        // Reload current session list to show the loaded data
-        loadSessions(date);
+        // Only reload sessions if the received date matches the currently selected date
+        QString selectedDate = dateEdit->date().toString("yyyy-MM-dd");
+        if (date == selectedDate) {
+            loadSessions(date);
+        }
     });
     connect(apiManager, &ApiManager::syncSuccess, this, [](const QString& message) {
         qDebug() << "同步成功:" << message;
