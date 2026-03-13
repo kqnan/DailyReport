@@ -511,6 +511,14 @@ void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
     doc.setArray(reports);
     qDebug() << "日报列表原始响应:" << doc.toJson(QJsonDocument::Indented);
 
+    // If list is empty, user has no reports yet - don't auto-create
+    if (reports.isEmpty()) {
+        qDebug() << "日报列表为空，暂无日报记录";
+        // Load recent days' sessions from local buffer
+        CloudSessionManager::instance().loadRecentDaysSessions(3);
+        return;
+    }
+
     // Find today's daily report
     QString today = getCurrentDate();
     bool foundTodayReport = false;
