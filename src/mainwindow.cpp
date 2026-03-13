@@ -466,6 +466,9 @@ void MainWindow::onLoginClicked() {
         QMetaObject::Connection loginSuccessConn = connect(apiManager, &ApiManager::loginSuccess, this, [this](const QString& token) {
             statusLabel->setText("状态: 登录成功");
             qDebug() << "登录成功，token:" << token;
+
+            // Get daily report list after successful login
+            apiManager->getDailyReportList(1, 50);
         });
 
         QMetaObject::Connection loginFailedConn = connect(apiManager, &ApiManager::loginFailed, this, [this](const QString& msg) {
@@ -480,6 +483,9 @@ void MainWindow::onLoginClicked() {
             disconnect(loginFailedConn);
         });
     });
+
+    // Show the dialog
+    dialog.open();
 }
 
 void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
