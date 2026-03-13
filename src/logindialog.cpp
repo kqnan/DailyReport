@@ -109,9 +109,10 @@ void LoginDialog::onLoginClicked() {
     apiManager->login(getUserNameId(), getPassword(), getCode());
 }
 
-void LoginDialog::onLoginSuccess(const QString& /* token */) {
+void LoginDialog::onLoginSuccess(const QString& token) {
     statusLabel->setText("登录成功！");
     statusLabel->setStyleSheet("color: green;");
+    emit loginCompleted(token);  // Emit signal for parent window
     accept();  // Close dialog with Accepted result
 }
 

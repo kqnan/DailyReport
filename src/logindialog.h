@@ -18,6 +18,9 @@ public:
     QString getPassword() const;
     QString getCode() const;
 
+signals:
+    void loginCompleted(const QString& token);
+
 private slots:
     void onGetVerificationCode();
     void onVerificationCodeReceived(int code);

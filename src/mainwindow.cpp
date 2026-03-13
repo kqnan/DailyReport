@@ -448,44 +448,18 @@ void MainWindow::onOpenFolder() {
 }
 
 void MainWindow::onLoginClicked() {
-    LoginDialog dialog(this);
-    connect(&dialog, &QDialog::accepted, this, [this, &dialog]() {
-        statusLabel->setText("状态: 获取验证码中...");
+    LoginDialog *dialog = new LoginDialog(this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
 
-        // Get verification code
-        apiManager->getVerificationCode();
-
-        // Use SingleShotConnection to avoid duplicate connections
-        QMetaObject::Connection verifConn = connect(apiManager, &ApiManager::verificationCodeReceived, this, [this, &dialog](int code) {
-            statusLabel->setText(QString("状态: 已获取验证码 %1").arg(code));
-
-            // Auto login with fetched code and user input credentials
-            apiManager->login(dialog.getUserNameId(), dialog.getPassword(), QString::number(code));
-        });
-
-        QMetaObject::Connection loginSuccessConn = connect(apiManager, &ApiManager::loginSuccess, this, [this](const QString& token) {
-            statusLabel->setText("状态: 登录成功");
-            qDebug() << "登录成功，token:" << token;
-
-            // Get daily report list after successful login
-            apiManager->getDailyReportList(1, 50);
-        });
-
-        QMetaObject::Connection loginFailedConn = connect(apiManager, &ApiManager::loginFailed, this, [this](const QString& msg) {
-            statusLabel->setText("状态: 登录失败");
-            QMessageBox::warning(this, "登录失败", msg);
-        });
-
-        // Disconnect when dialog finishes to avoid dangling connections
-        connect(&dialog, &QDialog::finished, this, [this, verifConn, loginSuccessConn, loginFailedConn]() {
-            disconnect(verifConn);
-            disconnect(loginSuccessConn);
-            disconnect(loginFailedConn);
-        });
+    // Get daily report list after successful login
+    connect(dialog, &LoginDialog::loginCompleted, this, [this](const QString& token) {
+        statusLabel->setText("状态: 登录成功");
+        qDebug() << "登录成功，token:" << token;
+        apiManager->getDailyReportList(1, 50);
     });
 
     // Show the dialog
-    dialog.open();
+    dialog->show();
 }
 
 void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
