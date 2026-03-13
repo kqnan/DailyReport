@@ -54,11 +54,14 @@ constexpr auto qt_meta_stringdata_CLASSApiManagerENDCLASS = QtMocHelpers::string
     "dailyReportListFailed",
     "dailyReportDetailsReceived",
     "tasks",
-    "dailyReportDetailsFailed"
+    "date",
+    "dailyReportDetailsFailed",
+    "syncSuccess",
+    "syncFailed"
 );
 #else  // !QT_MOC_HAS_STRING_DATA
 struct qt_meta_stringdata_CLASSApiManagerENDCLASS_t {
-    uint offsetsAndSizes[32];
+    uint offsetsAndSizes[38];
     char stringdata0[11];
     char stringdata1[25];
     char stringdata2[1];
@@ -74,7 +77,10 @@ struct qt_meta_stringdata_CLASSApiManagerENDCLASS_t {
     char stringdata12[22];
     char stringdata13[27];
     char stringdata14[6];
-    char stringdata15[25];
+    char stringdata15[5];
+    char stringdata16[25];
+    char stringdata17[12];
+    char stringdata18[11];
 };
 #define QT_MOC_LITERAL(ofs, len) \
     uint(sizeof(qt_meta_stringdata_CLASSApiManagerENDCLASS_t::offsetsAndSizes) + ofs), len 
@@ -95,7 +101,10 @@ Q_CONSTINIT static const qt_meta_stringdata_CLASSApiManagerENDCLASS_t qt_meta_st
         QT_MOC_LITERAL(142, 21),  // "dailyReportListFailed"
         QT_MOC_LITERAL(164, 26),  // "dailyReportDetailsReceived"
         QT_MOC_LITERAL(191, 5),  // "tasks"
-        QT_MOC_LITERAL(197, 24)   // "dailyReportDetailsFailed"
+        QT_MOC_LITERAL(197, 4),  // "date"
+        QT_MOC_LITERAL(202, 24),  // "dailyReportDetailsFailed"
+        QT_MOC_LITERAL(227, 11),  // "syncSuccess"
+        QT_MOC_LITERAL(239, 10)   // "syncFailed"
     },
     "ApiManager",
     "verificationCodeReceived",
@@ -112,7 +121,10 @@ Q_CONSTINIT static const qt_meta_stringdata_CLASSApiManagerENDCLASS_t qt_meta_st
     "dailyReportListFailed",
     "dailyReportDetailsReceived",
     "tasks",
-    "dailyReportDetailsFailed"
+    "date",
+    "dailyReportDetailsFailed",
+    "syncSuccess",
+    "syncFailed"
 };
 #undef QT_MOC_LITERAL
 #endif // !QT_MOC_HAS_STRING_DATA
@@ -124,22 +136,24 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSApiManagerENDCLASS[] = {
       12,       // revision
        0,       // classname
        0,    0, // classinfo
-       8,   14, // methods
+      10,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       8,       // signalCount
+      10,       // signalCount
 
  // signals: name, argc, parameters, tag, flags, initial metatype offsets
-       1,    1,   62,    2, 0x06,    1 /* Public */,
-       4,    1,   65,    2, 0x06,    3 /* Public */,
-       6,    1,   68,    2, 0x06,    5 /* Public */,
-       8,    1,   71,    2, 0x06,    7 /* Public */,
-      10,    1,   74,    2, 0x06,    9 /* Public */,
-      12,    1,   77,    2, 0x06,   11 /* Public */,
-      13,    1,   80,    2, 0x06,   13 /* Public */,
-      15,    1,   83,    2, 0x06,   15 /* Public */,
+       1,    1,   74,    2, 0x06,    1 /* Public */,
+       4,    1,   77,    2, 0x06,    3 /* Public */,
+       6,    1,   80,    2, 0x06,    5 /* Public */,
+       8,    1,   83,    2, 0x06,    7 /* Public */,
+      10,    1,   86,    2, 0x06,    9 /* Public */,
+      12,    1,   89,    2, 0x06,   11 /* Public */,
+      13,    2,   92,    2, 0x06,   13 /* Public */,
+      16,    1,   97,    2, 0x06,   16 /* Public */,
+      17,    1,  100,    2, 0x06,   18 /* Public */,
+      18,    1,  103,    2, 0x06,   20 /* Public */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::Int,    3,
@@ -148,7 +162,9 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSApiManagerENDCLASS[] = {
     QMetaType::Void, QMetaType::QString,    9,
     QMetaType::Void, QMetaType::QJsonArray,   11,
     QMetaType::Void, QMetaType::QString,    5,
-    QMetaType::Void, QMetaType::QJsonArray,   14,
+    QMetaType::Void, QMetaType::QJsonArray, QMetaType::QString,   14,   15,
+    QMetaType::Void, QMetaType::QString,    5,
+    QMetaType::Void, QMetaType::QString,    9,
     QMetaType::Void, QMetaType::QString,    5,
 
        0        // eod
@@ -184,7 +200,14 @@ Q_CONSTINIT const QMetaObject ApiManager::staticMetaObject = { {
         // method 'dailyReportDetailsReceived'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         QtPrivate::TypeAndForceComplete<const QJsonArray &, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
         // method 'dailyReportDetailsFailed'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        // method 'syncSuccess'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
+        // method 'syncFailed'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         QtPrivate::TypeAndForceComplete<const QString &, std::false_type>
     >,
@@ -203,8 +226,10 @@ void ApiManager::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 3: _t->loginFailed((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
         case 4: _t->dailyReportListReceived((*reinterpret_cast< std::add_pointer_t<QJsonArray>>(_a[1]))); break;
         case 5: _t->dailyReportListFailed((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 6: _t->dailyReportDetailsReceived((*reinterpret_cast< std::add_pointer_t<QJsonArray>>(_a[1]))); break;
+        case 6: _t->dailyReportDetailsReceived((*reinterpret_cast< std::add_pointer_t<QJsonArray>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2]))); break;
         case 7: _t->dailyReportDetailsFailed((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 8: _t->syncSuccess((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
+        case 9: _t->syncFailed((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -252,7 +277,7 @@ void ApiManager::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
             }
         }
         {
-            using _t = void (ApiManager::*)(const QJsonArray & );
+            using _t = void (ApiManager::*)(const QJsonArray & , const QString & );
             if (_t _q_method = &ApiManager::dailyReportDetailsReceived; *reinterpret_cast<_t *>(_a[1]) == _q_method) {
                 *result = 6;
                 return;
@@ -262,6 +287,20 @@ void ApiManager::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
             using _t = void (ApiManager::*)(const QString & );
             if (_t _q_method = &ApiManager::dailyReportDetailsFailed; *reinterpret_cast<_t *>(_a[1]) == _q_method) {
                 *result = 7;
+                return;
+            }
+        }
+        {
+            using _t = void (ApiManager::*)(const QString & );
+            if (_t _q_method = &ApiManager::syncSuccess; *reinterpret_cast<_t *>(_a[1]) == _q_method) {
+                *result = 8;
+                return;
+            }
+        }
+        {
+            using _t = void (ApiManager::*)(const QString & );
+            if (_t _q_method = &ApiManager::syncFailed; *reinterpret_cast<_t *>(_a[1]) == _q_method) {
+                *result = 9;
                 return;
             }
         }
@@ -287,13 +326,13 @@ int ApiManager::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 8)
+        if (_id < 10)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 8;
+        _id -= 10;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 8)
+        if (_id < 10)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 8;
+        _id -= 10;
     }
     return _id;
 }
@@ -341,9 +380,9 @@ void ApiManager::dailyReportListFailed(const QString & _t1)
 }
 
 // SIGNAL 6
-void ApiManager::dailyReportDetailsReceived(const QJsonArray & _t1)
+void ApiManager::dailyReportDetailsReceived(const QJsonArray & _t1, const QString & _t2)
 {
-    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))), const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t2))) };
     QMetaObject::activate(this, &staticMetaObject, 6, _a);
 }
 
@@ -352,5 +391,19 @@ void ApiManager::dailyReportDetailsFailed(const QString & _t1)
 {
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
     QMetaObject::activate(this, &staticMetaObject, 7, _a);
+}
+
+// SIGNAL 8
+void ApiManager::syncSuccess(const QString & _t1)
+{
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
+    QMetaObject::activate(this, &staticMetaObject, 8, _a);
+}
+
+// SIGNAL 9
+void ApiManager::syncFailed(const QString & _t1)
+{
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
+    QMetaObject::activate(this, &staticMetaObject, 9, _a);
 }
 QT_WARNING_POP
