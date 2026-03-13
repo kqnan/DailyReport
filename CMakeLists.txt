@@ -31,6 +31,8 @@ add_executable(DailyReport
     src/datamodel.cpp
     src/sessionmanager.h
     src/sessionmanager.cpp
+    src/cloudsessionmanager.h
+    src/cloudsessionmanager.cpp
     src/utils.h
     src/utils.cpp
     src/apimanager.h

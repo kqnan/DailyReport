@@ -3,6 +3,10 @@
 #include <QDebug>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QUrlQuery>
+#include <QByteArray>
+#include <QList>
+#include <QPair>
 
 ApiManager& ApiManager::instance() {
     static ApiManager instance;
@@ -162,4 +166,62 @@ QString ApiManager::getCookieHeader() const {
         return "";
     }
     return "token=" + token;
+}
+
+void ApiManager::syncDailyReport(const QString& uuid, const QString& applicantId, const QString& applicantName,
+                                 const QString& dailyReportDate, const QString& month, const QString& week,
+                                 const QList<QPair<QString, double>>& tasks) {
+    QUrl url("https://oa.zhilehuo.com/office/shiquOaDaily/update");
+    QUrlQuery query;
+    query.addQueryItem("uuid", uuid);
+    query.addQueryItem("applicantId", applicantId);
+    query.addQueryItem("applicantName", applicantName);
+    query.addQueryItem("dailyReportDate", dailyReportDate);
+    query.addQueryItem("month", month);
+    query.addQueryItem("week", week);
+
+    // Add tasks
+    int serialNumber = 1;
+    for (const auto& task : tasks) {
+        QString taskKey = QString("task%1").arg(serialNumber);
+        QString hoursKey = QString("hours%1").arg(serialNumber);
+        query.addQueryItem(taskKey, task.first);
+        query.addQueryItem(hoursKey, QString::number(task.second));
+        serialNumber++;
+    }
+
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    request.setRawHeader("Cookie", getCookieHeader().toUtf8());
+
+    QNetworkReply* reply = networkManager->post(request, query.query().toUtf8());
+    connect(reply, &QNetworkReply::finished, [this, reply, uuid]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            emit syncFailed(reply->errorString());
+            reply->deleteLater();
+            return;
+        }
+
+        QByteArray response = reply->readAll();
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(response, &parseError);
+
+        if (parseError.error != QJsonParseError::NoError) {
+            emit syncFailed("Invalid JSON response");
+            reply->deleteLater();
+            return;
+        }
+
+        QJsonObject obj = doc.object();
+        int statusCode = obj["statusCode"].toInt();
+
+        if (statusCode == 200) {
+            QString message = obj["message"].toString();
+            emit syncSuccess(message);
+        } else {
+            emit syncFailed(obj["message"].toString());
+        }
+
+        reply->deleteLater();
+    });
 }

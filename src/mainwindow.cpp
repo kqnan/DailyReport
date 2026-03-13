@@ -33,7 +33,17 @@ void MainWindow::setupApiConnections() {
     connect(apiManager, &ApiManager::dailyReportListReceived, this, &MainWindow::onDailyReportListReceived);
     connect(apiManager, &ApiManager::dailyReportDetailsReceived, this, [this](const QJsonArray& tasks) {
         // Handle daily report details
-        qDebug() << "Received" << tasks.size() << "tasks";
+        CloudSessionManager::instance().parseDailyReportDetails(tasks);
+        QString today = getCurrentDate();
+        loadSessions(today);
+    });
+    connect(apiManager, &ApiManager::syncSuccess, this, [](const QString& message) {
+        qDebug() << "同步成功:" << message;
+        QMessageBox::information(nullptr, "同步成功", message);
+    });
+    connect(apiManager, &ApiManager::syncFailed, this, [](const QString& error) {
+        qDebug() << "同步失败:" << error;
+        QMessageBox::warning(nullptr, "同步失败", error);
     });
 }
 
@@ -54,6 +64,7 @@ void MainWindow::initUI() {
     todayButton = new QPushButton("今天");
     openFolderButton = new QPushButton("📂 打开记录文件夹");
     loginButton = new QPushButton("🔐 登录");
+    syncButton = new QPushButton("📤 同步");
 
     statusLabel = new QLabel("状态: 未登录");
 
@@ -105,6 +116,7 @@ void MainWindow::initUI() {
     exportLayout->addWidget(exportCsvButton);
     exportLayout->addWidget(exportJsonButton);
     exportLayout->addWidget(openFolderButton);
+    exportLayout->addWidget(syncButton);
     mainLayout->addLayout(exportLayout);
 
     // Status label and login button
@@ -131,10 +143,11 @@ void MainWindow::initUI() {
     connect(exportJsonButton, &QPushButton::clicked, this, &MainWindow::onExport);
     connect(openFolderButton, &QPushButton::clicked, this, &MainWindow::onOpenFolder);
     connect(loginButton, &QPushButton::clicked, this, &MainWindow::onLoginClicked);
+    connect(syncButton, &QPushButton::clicked, this, &MainWindow::onSync);
 }
 
 void MainWindow::onStartShift() {
-    SessionManager &mgr = SessionManager::instance();
+    CloudSessionManager &mgr = CloudSessionManager::instance();
 
     // Check for existing active session in selected date
     QString selectedDate = dateEdit->date().toString("yyyy-MM-dd");
@@ -154,7 +167,7 @@ void MainWindow::onStartShift() {
     session.activity = "工作片段";
     session.workType = "默认";
 
-    SessionManager::instance().addSession(session);
+    mgr.addSession(session);
 
     // Store active session
     if (activeSession) delete activeSession;
@@ -202,7 +215,7 @@ void MainWindow::onEndShift() {
         activeSession->activity = activityEdit->toPlainText();
         activeSession->workType = workTypeCombo->currentText();
 
-        SessionManager::instance().updateSession(activeSession->date, *activeSession);
+        CloudSessionManager::instance().updateSession(*activeSession);
         delete activeSession;
         activeSession = nullptr;
 
@@ -220,10 +233,10 @@ void MainWindow::onDateChanged(const QDate &date) {
 }
 
 void MainWindow::loadSessions(const QString &date) {
-    currentSessions = SessionManager::instance().loadSessions(date);
+    currentSessions = CloudSessionManager::instance().getSessions(date);
 
     // Update statistics for the selected date
-    DailyStatistics stat = SessionManager::instance().getStatisticsForDate(date);
+    DailyStatistics stat = CloudSessionManager::instance().getStatisticsForDate(date);
     totalHoursLabel->setText(formatDuration(stat.totalHours));
     sessionCountLabel->setText(QString::number(stat.sessionCount) + " 段");
 
@@ -345,7 +358,7 @@ void MainWindow::onEditSession() {
         session->activity = activityEdit->toPlainText();
         session->workType = workTypeCombo->currentText();
 
-        SessionManager::instance().updateSession(session->date, *session);
+        CloudSessionManager::instance().updateSession(*session);
         loadSessions(session->date);
     }
 
@@ -362,8 +375,7 @@ void MainWindow::onDeleteSession() {
         QString("确定要删除 %1 的记录吗？").arg(item->text().split(" ")[0]));
 
     if (ret == QMessageBox::Yes) {
-        QString date = dateEdit->date().toString("yyyy-MM-dd");
-        SessionManager::instance().deleteSession(date, id);
+        CloudSessionManager::instance().deleteSession(id);
 
         // Remove from currentSessions
         for (int i = 0; i < currentSessions.size(); ++i) {
@@ -373,14 +385,14 @@ void MainWindow::onDeleteSession() {
             }
         }
 
-        loadSessions(date);
+        loadSessions(getCurrentDate());
     }
 }
 
 void MainWindow::onExport() {
     QString format = QObject::sender() == exportCsvButton ? "CSV" : "JSON";
     QString date = dateEdit->date().toString("yyyy-MM-dd");
-    QList<WorkSession> sessions = SessionManager::instance().loadSessions(date);
+    QList<WorkSession> sessions = CloudSessionManager::instance().getSessions(date);
 
     QString filePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     filePath += "/工时记录_" + date + "." + format.toLower();
@@ -434,7 +446,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         activeSession->durationHours = activeSession->calculateDuration();
         activeSession->activity = "工作片段";
 
-        SessionManager::instance().updateSession(activeSession->date, *activeSession);
+        CloudSessionManager::instance().updateSession(*activeSession);
         delete activeSession;
         activeSession = nullptr;
     }
@@ -455,6 +467,11 @@ void MainWindow::onLoginClicked() {
     connect(dialog, &LoginDialog::loginCompleted, this, [this](const QString& token) {
         statusLabel->setText("状态: 登录成功");
         qDebug() << "登录成功，token:" << token;
+
+        // Set applicant info from LoginDialog's apiManager
+        CloudSessionManager::instance().setApplicantInfo("SQ13793", "孔启楠");
+
+        // Get daily report list first
         apiManager->getDailyReportList(1, 50);
     });
 
@@ -462,13 +479,41 @@ void MainWindow::onLoginClicked() {
     dialog->show();
 }
 
+void MainWindow::onSync() {
+    QString today = getCurrentDate();
+    CloudSessionManager& mgr = CloudSessionManager::instance();
+
+    if (!mgr.getBuffer().contains(today) || mgr.getBuffer()[today].isEmpty()) {
+        QMessageBox::information(this, "同步", "今天没有记录需要同步");
+        return;
+    }
+
+    statusLabel->setText("状态: 同步中...");
+    mgr.syncToday();
+}
+
 void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
     statusLabel->setText("状态: 已登录");
     qDebug() << "获取日报列表成功，共" << reports.size() << "条记录";
 
+    // Find today's daily report
+    QString today = getCurrentDate();
     for (const QJsonValue& value : reports) {
         QJsonObject report = value.toObject();
-        qDebug() << "日报:" << report["dailyReportDate"].toString()
-                 << "创建人:" << report["creator"].toString();
+        QString date = report["dailyReportDate"].toString();
+        qDebug() << "日报:" << date << "创建人:" << report["creator"].toString();
+
+        if (date == today) {
+            // Set today's daily report info for syncing
+            CloudSessionManager::instance().setTodayDailyReport(
+                report["uuid"].toString(),
+                report["month"].toString(),
+                report["week"].toString()
+            );
+            qDebug() << "找到今日日报:" << today;
+        }
     }
+
+    // Load today's sessions after getting the report list
+    CloudSessionManager::instance().loadTodaySessions();
 }

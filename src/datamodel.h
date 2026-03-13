@@ -3,6 +3,8 @@
 #include <QDateTime>
 #include <QJsonArray>
 #include <optional>
+#include <QList>
+#include <QPair>
 
 struct WorkSession {
     QString id;

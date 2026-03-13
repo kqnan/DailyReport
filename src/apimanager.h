@@ -7,6 +7,8 @@
 #include <QJsonObject>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QList>
+#include <QString>
 
 class ApiManager : public QObject {
     Q_OBJECT
@@ -26,6 +28,14 @@ public:
     // Get daily report details for a specific date
     void getDailyReportDetails(const QString& dailyReportDate, const QString& applicantId);
 
+    // Sync daily report to server
+    void syncDailyReport(const QString& uuid, const QString& applicantId, const QString& applicantName,
+                        const QString& dailyReportDate, const QString& month, const QString& week,
+                        const QList<QPair<QString, double>>& tasks);
+
+    // Get daily report list for a specific date
+    void getDailyReportListByDate(const QString& date, int page, int rows);
+
 signals:
     // Verification code signals
     void verificationCodeReceived(int code);
@@ -42,6 +52,10 @@ signals:
     // Daily report details signals
     void dailyReportDetailsReceived(const QJsonArray& tasks);
     void dailyReportDetailsFailed(const QString& error);
+
+    // Sync signals
+    void syncSuccess(const QString& message);
+    void syncFailed(const QString& error);
 
 private:
     ApiManager() = default;

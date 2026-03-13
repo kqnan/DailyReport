@@ -10,6 +10,7 @@
 #include "datamodel.h"
 #include "sessionmanager.h"
 #include "apimanager.h"
+#include "cloudsessionmanager.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -28,6 +29,7 @@ private slots:
     void onOpenFolder();
     void onLoginClicked();
     void onDailyReportListReceived(const QJsonArray& reports);
+    void onSync();
     void setupApiConnections();
 
 protected:
@@ -44,6 +46,7 @@ private:
     QPushButton *todayButton;
     QPushButton *openFolderButton;
     QPushButton *loginButton;
+    QPushButton *syncButton;
 
     // Labels
     QLabel *totalHoursLabel;
