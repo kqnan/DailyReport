@@ -30,6 +30,7 @@ private slots:
     void onLoginClicked();
     void onDailyReportListReceived(const QJsonArray& reports);
     void onDailyReportCreated(const QString& message, const QString& status);
+    void onDailyReportCreateFailed(const QString& error);
     void onSync();
     void setupApiConnections();
 
