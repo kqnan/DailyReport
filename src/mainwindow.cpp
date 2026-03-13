@@ -34,8 +34,9 @@ void MainWindow::setupApiConnections() {
     connect(apiManager, &ApiManager::dailyReportDetailsReceived, this, [this](const QJsonArray& tasks) {
         // Handle daily report details
         CloudSessionManager::instance().parseDailyReportDetails(tasks);
-        QString today = getCurrentDate();
-        loadSessions(today);
+        // Reload current session list to show the loaded data
+        QString selectedDate = dateEdit->date().toString("yyyy-MM-dd");
+        loadSessions(selectedDate);
     });
     connect(apiManager, &ApiManager::syncSuccess, this, [](const QString& message) {
         qDebug() << "同步成功:" << message;
@@ -229,7 +230,13 @@ void MainWindow::onEndShift() {
 }
 
 void MainWindow::onDateChanged(const QDate &date) {
-    loadSessions(date.toString("yyyy-MM-dd"));
+    QString dateStr = date.toString("yyyy-MM-dd");
+    // Load the selected date's daily report details if not already loaded
+    CloudSessionManager& mgr = CloudSessionManager::instance();
+    if (mgr.getSessionCount(dateStr) == 0) {
+        mgr.loadDailyReportDetails(dateStr);
+    }
+    loadSessions(dateStr);
 }
 
 void MainWindow::loadSessions(const QString &date) {
@@ -513,6 +520,9 @@ void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
             qDebug() << "找到今日日报:" << today;
         }
     }
+
+    // Load recent days' sessions (today and previous 2 days)
+    CloudSessionManager::instance().loadRecentDaysSessions(3);
 
     // Load today's sessions after getting the report list
     CloudSessionManager::instance().loadTodaySessions();

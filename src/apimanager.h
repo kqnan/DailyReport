@@ -28,6 +28,11 @@ public:
     // Get daily report details for a specific date
     void getDailyReportDetails(const QString& dailyReportDate, const QString& applicantId);
 
+    // Create daily report for a specific date
+    void createDailyReport(const QString& applicantId, const QString& applicantName,
+                          const QString& dailyReportDate, const QString& month, const QString& week,
+                          const QList<QPair<QString, double>>& tasks);
+
     // Sync daily report to server
     void syncDailyReport(const QString& uuid, const QString& applicantId, const QString& applicantName,
                         const QString& dailyReportDate, const QString& month, const QString& week,

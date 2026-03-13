@@ -161,6 +161,64 @@ void ApiManager::getDailyReportDetails(const QString& dailyReportDate, const QSt
     });
 }
 
+void ApiManager::createDailyReport(const QString& applicantId, const QString& applicantName,
+                                   const QString& dailyReportDate, const QString& month, const QString& week,
+                                   const QList<QPair<QString, double>>& tasks) {
+    QUrl url("https://oa.zhilehuo.com/office/shiquOaDaily/save");
+    QUrlQuery query;
+    query.addQueryItem("uuid", "");
+    query.addQueryItem("i", QString::number(tasks.size()));
+    query.addQueryItem("applicantId", applicantId);
+    query.addQueryItem("applicantName", applicantName);
+    query.addQueryItem("dailyReportDate", dailyReportDate);
+    query.addQueryItem("month", month);
+    query.addQueryItem("week", week);
+
+    int serialNumber = 1;
+    for (const auto& task : tasks) {
+        QString taskKey = QString("task%1").arg(serialNumber);
+        QString hoursKey = QString("hours%1").arg(serialNumber);
+        query.addQueryItem(taskKey, task.first);
+        query.addQueryItem(hoursKey, QString::number(task.second));
+        serialNumber++;
+    }
+
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    request.setRawHeader("Cookie", getCookieHeader().toUtf8());
+
+    QNetworkReply* reply = networkManager->post(request, query.query().toUtf8());
+    connect(reply, &QNetworkReply::finished, [this, reply, dailyReportDate]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            emit dailyReportListFailed(reply->errorString());
+            reply->deleteLater();
+            return;
+        }
+
+        QByteArray response = reply->readAll();
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(response, &parseError);
+
+        if (parseError.error != QJsonParseError::NoError) {
+            emit dailyReportListFailed("Invalid JSON response");
+            reply->deleteLater();
+            return;
+        }
+
+        QJsonObject obj = doc.object();
+        int statusCode = obj["statusCode"].toInt();
+
+        if (statusCode == 200) {
+            QString message = obj["message"].toString();
+            emit dailyReportListReceived(QJsonArray());
+        } else {
+            emit dailyReportListFailed(obj["message"].toString());
+        }
+
+        reply->deleteLater();
+    });
+}
+
 QString ApiManager::getCookieHeader() const {
     if (token.isEmpty()) {
         return "";

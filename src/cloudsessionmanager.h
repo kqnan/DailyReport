@@ -35,6 +35,15 @@ public:
     // Load sessions from server for today
     void loadTodaySessions();
 
+    // Load sessions from server for a specific date
+    void loadDailyReportDetails(const QString& date);
+
+    // Load recent days' sessions from server
+    void loadRecentDaysSessions(int days = 3);
+
+    // Get session count for a date
+    int getSessionCount(const QString& date) const;
+
     // Add session to buffer (内存中)
     void addSession(const WorkSession& session);
 
@@ -46,6 +55,9 @@ public:
 
     // Sync today's sessions to server
     void syncToday();
+
+    // Create today's daily report if not exists
+    void createTodayDailyReportIfNotExist();
 
     // Get sessions for a date from buffer
     QList<WorkSession> getSessions(const QString& date) const;
