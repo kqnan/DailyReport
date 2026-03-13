@@ -25,6 +25,16 @@ QString CloudSessionManager::getCurrentDate() const {
     return QDateTime::currentDateTime().toString("yyyy-MM-dd");
 }
 
+QString CloudSessionManager::getCurrentDayOfWeek(const QString& date) const {
+    QDate qDate = QDate::fromString(date, "yyyy-MM-dd");
+    if (!qDate.isValid()) {
+        return "星期一";
+    }
+    int dayOfWeek = qDate.dayOfWeek();
+    QString days[] = {"星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"};
+    return days[dayOfWeek - 1];
+}
+
 int CloudSessionManager::getSessionCount(const QString& date) const {
     if (!buffer.contains(date)) return 0;
     return buffer[date].size();
