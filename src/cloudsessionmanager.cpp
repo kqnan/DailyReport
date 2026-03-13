@@ -226,9 +226,8 @@ DailyStatistics CloudSessionManager::getStatisticsForDate(const QString& date) c
     return stat;
 }
 
-void CloudSessionManager::parseDailyReportDetails(const QJsonArray& tasks) {
-    QString today = getCurrentDate();
-    buffer[today] = QList<CloudWorkRecord>();
+void CloudSessionManager::parseDailyReportDetails(const QJsonArray& tasks, const QString& date) {
+    buffer[date] = QList<CloudWorkRecord>();
 
     for (const auto& value : tasks) {
         if (!value.isObject()) continue;
@@ -239,14 +238,19 @@ void CloudSessionManager::parseDailyReportDetails(const QJsonArray& tasks) {
         record.taskDescription = obj["taskDescription"].toString();
         record.workingHours = obj["workingHours"].toDouble();
         record.isSynced = true;
+        record.date = date;
 
-        buffer[today].append(record);
-        qDebug() << "解析日报详情:" << record.taskDescription << " " << record.workingHours << "小时";
+        buffer[date].append(record);
+        qDebug() << "解析日报详情:" << date << record.taskDescription << " " << record.workingHours << "小时";
     }
 
-    qDebug() << "今日共解析" << buffer[today].size() << "条会话";
+    qDebug() << date << "共解析" << buffer[date].size() << "条会话";
 }
 
 const QMap<QString, QList<CloudWorkRecord>>& CloudSessionManager::getBuffer() const {
     return buffer;
+}
+
+void CloudSessionManager::clearBuffer() {
+    buffer.clear();
 }

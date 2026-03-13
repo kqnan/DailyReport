@@ -137,7 +137,7 @@ void ApiManager::getDailyReportDetails(const QString& dailyReportDate, const QSt
     request.setRawHeader("Cookie", getCookieHeader().toUtf8());
 
     QNetworkReply* reply = networkManager->post(request, query.query().toUtf8());
-    connect(reply, &QNetworkReply::finished, [this, reply]() {
+    connect(reply, &QNetworkReply::finished, [this, reply, dailyReportDate]() {
         if (reply->error() != QNetworkReply::NoError) {
             emit dailyReportDetailsFailed(reply->errorString());
             reply->deleteLater();
@@ -155,7 +155,7 @@ void ApiManager::getDailyReportDetails(const QString& dailyReportDate, const QSt
         }
 
         QJsonArray array = doc.array();
-        emit dailyReportDetailsReceived(array);
+        emit dailyReportDetailsReceived(array, dailyReportDate);
 
         reply->deleteLater();
     });

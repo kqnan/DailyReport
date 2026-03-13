@@ -31,12 +31,11 @@ MainWindow::~MainWindow() {
 
 void MainWindow::setupApiConnections() {
     connect(apiManager, &ApiManager::dailyReportListReceived, this, &MainWindow::onDailyReportListReceived);
-    connect(apiManager, &ApiManager::dailyReportDetailsReceived, this, [this](const QJsonArray& tasks) {
+    connect(apiManager, &ApiManager::dailyReportDetailsReceived, this, [this](const QJsonArray& tasks, const QString& date) {
         // Handle daily report details
-        CloudSessionManager::instance().parseDailyReportDetails(tasks);
+        CloudSessionManager::instance().parseDailyReportDetails(tasks, date);
         // Reload current session list to show the loaded data
-        QString selectedDate = dateEdit->date().toString("yyyy-MM-dd");
-        loadSessions(selectedDate);
+        loadSessions(date);
     });
     connect(apiManager, &ApiManager::syncSuccess, this, [](const QString& message) {
         qDebug() << "同步成功:" << message;
@@ -236,6 +235,7 @@ void MainWindow::onDateChanged(const QDate &date) {
     if (mgr.getSessionCount(dateStr) == 0) {
         mgr.loadDailyReportDetails(dateStr);
     }
+    // Always reload sessions to show the latest data (from buffer or API response)
     loadSessions(dateStr);
 }
 

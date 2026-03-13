@@ -75,10 +75,13 @@ public:
     DailyStatistics getTodayStatistics() const;
 
     // Parse daily report details from server API response
-    void parseDailyReportDetails(const QJsonArray& tasks);
+    void parseDailyReportDetails(const QJsonArray& tasks, const QString& date);
 
     // Get buffer (for testing)
     const QMap<QString, QList<CloudWorkRecord>>& getBuffer() const;
+
+    // Clear buffer (for testing)
+    void clearBuffer();
 
 private:
     CloudSessionManager() = default;

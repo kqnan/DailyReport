@@ -55,7 +55,7 @@ signals:
     void dailyReportListFailed(const QString& error);
 
     // Daily report details signals
-    void dailyReportDetailsReceived(const QJsonArray& tasks);
+    void dailyReportDetailsReceived(const QJsonArray& tasks, const QString& date);
     void dailyReportDetailsFailed(const QString& error);
 
     // Sync signals
