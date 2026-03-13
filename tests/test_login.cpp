@@ -359,36 +359,69 @@ private slots:
         QCOMPARE(mgr.getSessionCount("2026-03-13"), 2);
     }
 
-    // Test: When daily report list returns empty, it means no reports exist yet
-    // The code should NOT try to create a report when list is empty
-    void test_empty_daily_report_list_means_no_reports() {
+    // Bug fix test: Session after end shift should NOT be active
+    void test_session_after_end_shift_not_active() {
         CloudSessionManager& mgr = CloudSessionManager::instance();
         mgr.clearBuffer();
 
-        // Simulate API returning empty list (no reports for user)
-        QJsonArray emptyArray;
+        // Add an active session
+        WorkSession session;
+        session.id = "end-test-uuid";
+        session.date = "2026-03-13";
+        session.startTime = "2026-03-13T09:00:00";
+        session.durationHours = 0;
+        session.activity = "进行中的工作";
+        session.workType = "开发";
+        session.endTime = "";  // Initially active
 
-        // The issue: when list is empty, createTodayDailyReportIfNotExist is called
-        // But it should only create if we explicitly want to create for a specific date
-        // And the UUID should not be empty when calling create
-        QCOMPARE(emptyArray.size(), 0);
+        mgr.addSession(session);
+
+        // Simulate end shift - set endTime and calculate duration
+        session.endTime = "2026-03-13T12:00:00";
+        session.durationHours = session.calculateDuration();
+        mgr.updateSession(session);
+
+        // After end shift, session should NOT be active
+        QList<WorkSession> sessions = mgr.getSessions("2026-03-13");
+        QCOMPARE(sessions.size(), 1);
+        // BUG: Currently, isSynced is set to false in updateSession,
+        // but endTime should still be set to indicate it's ended
+        QVERIFY(!sessions[0].isActive());
+        QVERIFY(!sessions[0].endTime.isEmpty());
     }
 
-    // Test: Empty list should not trigger auto-creation
-    void test_empty_list_should_not_trigger_auto_creation() {
-        CloudSessionManager& mgr = CloudSessionManager::instance();
-        mgr.clearBuffer();
+    // Bug fix test: Minimum duration should be 0.1 hours (6 minutes)
+    void test_minimum_duration_is_01_hours() {
+        WorkSession session;
+        session.startTime = "2026-03-13T09:00:00";
+        session.endTime = "2026-03-13T09:06:00";  // 6 minutes = 0.1 hours
 
-        // Simulate empty list response
-        QJsonArray emptyArray;
-        QCOMPARE(emptyArray.size(), 0);
+        double duration = session.calculateDuration();
+        // Minimum should be 0.1 hours
+        QVERIFY(duration >= 0.1);
+        QCOMPARE(duration, 0.1);
+    }
 
-        // When list is empty, the code should NOT call createTodayDailyReportIfNotExist
-        // because there's no report to sync yet
-        // The user should manually trigger sync or the report should already exist
+    // Bug fix test: Very short duration should be rounded up to 0.1 hours
+    void test_very_short_duration_rounded_up() {
+        WorkSession session;
+        session.startTime = "2026-03-13T09:00:00";
+        session.endTime = "2026-03-13T09:03:00";  // 3 minutes
 
-        // This is the fix: onDailyReportListReceived checks reports.isEmpty() first
-        // and returns early if empty, without trying to create
+        double duration = session.calculateDuration();
+        // Even 3 minutes should be at least 0.1 hours
+        QCOMPARE(duration, 0.1);
+    }
+
+    // Bug fix test: Duration of 0 should be raised to 0.1
+    void test_zero_duration_becomes_01() {
+        WorkSession session;
+        session.startTime = "2026-03-13T09:00:00";
+        session.endTime = "2026-03-13T09:00:30";  // 30 seconds
+
+        double duration = session.calculateDuration();
+        // 30 seconds should be rounded up to minimum 0.1 hours
+        QCOMPARE(duration, 0.1);
     }
 };
 

@@ -12,6 +12,7 @@ CloudWorkRecord CloudWorkRecord::fromWorkSession(const WorkSession& session) {
     record.taskDescription = session.activity;
     record.workingHours = session.durationHours;
     record.isSynced = false;
+    record.endTime = session.endTime;
     return record;
 }
 
@@ -112,7 +113,8 @@ void CloudSessionManager::updateSession(const WorkSession& session) {
             if (record.uuid == session.id) {
                 record.taskDescription = session.activity;
                 record.workingHours = session.durationHours;
-                record.isSynced = false;
+                record.isSynced = false;  // Mark as unsynced local update
+                record.endTime = session.endTime;  // Preserve end time if session ended
                 qDebug() << "更新会话:" << session.id << " new activity=" << session.activity;
                 return;
             }
@@ -184,8 +186,9 @@ QList<WorkSession> CloudSessionManager::getSessions(const QString& date) const {
         session.id = record.uuid;
         session.date = record.date;
         session.startTime = "";  // Not stored in cloud
-        // Synced records are completed (have end time), unsynced are active
-        session.endTime = record.isSynced ? "synced" : "";
+        // Synced records (from API) use "synced" as end time marker
+        // Local records use their actual end time if set, or empty if active
+        session.endTime = record.isSynced ? "synced" : record.endTime;
         session.durationHours = record.workingHours;
         session.activity = record.taskDescription;
         session.workType = "开发";  // Default work type

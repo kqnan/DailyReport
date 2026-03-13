@@ -15,6 +15,7 @@ struct CloudWorkRecord {
     QString taskDescription;   // Work content
     double workingHours;       // Hours spent
     bool isSynced;             // Whether this record is synced to server
+    QString endTime;           // End time if session ended
 
     // Convert WorkSession to CloudWorkRecord
     static CloudWorkRecord fromWorkSession(const WorkSession& session);

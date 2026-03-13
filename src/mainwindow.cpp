@@ -511,16 +511,27 @@ void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
     doc.setArray(reports);
     qDebug() << "日报列表原始响应:" << doc.toJson(QJsonDocument::Indented);
 
-    // If list is empty, user has no reports yet - don't auto-create
+    // If list is empty, user has no reports yet
+    QString today = getCurrentDate();
+    CloudSessionManager& mgr = CloudSessionManager::instance();
+
+    // Check if there are local sessions to sync
+    bool hasLocalSessions = mgr.getSessionCount(today) > 0;
+
     if (reports.isEmpty()) {
-        qDebug() << "日报列表为空，暂无日报记录";
-        // Load recent days' sessions from local buffer
-        CloudSessionManager::instance().loadRecentDaysSessions(3);
+        if (hasLocalSessions) {
+            qDebug() << "日报列表为空但有本地会话，直接尝试创建日报...";
+            // Try to create today's report
+            mgr.createTodayDailyReportIfNotExist();
+        } else {
+            qDebug() << "日报列表为空，暂无日报记录";
+            // Load recent days' sessions from local buffer
+            mgr.loadRecentDaysSessions(3);
+        }
         return;
     }
 
     // Find today's daily report
-    QString today = getCurrentDate();
     bool foundTodayReport = false;
     for (const QJsonValue& value : reports) {
         QJsonObject report = value.toObject();
@@ -529,7 +540,7 @@ void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
 
         if (date == today) {
             // Set today's daily report info for syncing
-            CloudSessionManager::instance().setTodayDailyReport(
+            mgr.setTodayDailyReport(
                 report["uuid"].toString(),
                 report["month"].toString(),
                 report["week"].toString()
@@ -542,18 +553,18 @@ void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
     // If today's report not found, create it
     if (!foundTodayReport) {
         qDebug() << "今日日报不存在，尝试创建...";
-        CloudSessionManager::instance().createTodayDailyReportIfNotExist();
+        mgr.createTodayDailyReportIfNotExist();
         return;  // Wait for create response, then sync
     }
 
     // Load recent days' sessions (today and previous 2 days)
-    CloudSessionManager::instance().loadRecentDaysSessions(3);
+    mgr.loadRecentDaysSessions(3);
 
     // Load today's sessions after getting the report list
-    CloudSessionManager::instance().loadTodaySessions();
+    mgr.loadTodaySessions();
 
     // Sync today's sessions if there are any unsynced sessions in buffer
-    CloudSessionManager::instance().syncToday();
+    mgr.syncToday();
 }
 
 void MainWindow::onDailyReportCreated(const QString& message, const QString& status) {

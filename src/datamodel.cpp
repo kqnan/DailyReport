@@ -7,5 +7,8 @@ double WorkSession::calculateDuration() const {
     QDateTime end = QDateTime::fromString(endTime, Qt::ISODate);
 
     double seconds = start.secsTo(end);
-    return qRound(seconds / 3600.0 * 10) / 10;
+    double hours = qRound(seconds / 3600.0 * 10) / 10;
+
+    // Minimum duration is 0.1 hours (6 minutes)
+    return hours < 0.1 ? 0.1 : hours;
 }
