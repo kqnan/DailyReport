@@ -615,8 +615,9 @@ void MainWindow::onDailyReportCreateFailed(const QString& error) {
 
     // Check if it's "already exists" error
     if (error.contains("已存在") || error.contains("重复")) {
-        qDebug() << "日报已存在，重新获取列表...";
-        apiManager->getDailyReportList(1, 50);
+        qDebug() << "日报已存在，不重试创建，直接同步本地会话...";
+        // Get details for today to sync with existing report
+        CloudSessionManager::instance().loadTodaySessions();
     } else {
         // Other error, show to user
         QMessageBox::warning(this, "同步失败", error);
