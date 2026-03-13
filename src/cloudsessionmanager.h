@@ -102,4 +102,5 @@ private:
     QString todayWeek;
 
     QString getCurrentDate() const;
+    QString getCurrentDayOfWeek(const QString& date) const;
 };
