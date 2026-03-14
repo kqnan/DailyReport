@@ -38,6 +38,9 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private:
+    // Sync request flag
+    bool m_isSyncRequest = false;
+
     // Buttons
     QPushButton *startButton;
     QPushButton *endButton;
