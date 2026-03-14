@@ -500,8 +500,19 @@ void MainWindow::onSync() {
         return;
     }
 
-    statusLabel->setText("状态: 同步中...");
-    mgr.syncToday();
+    statusLabel->setText("状态：同步中...");
+    m_isSyncRequest = true;  // 标记为同步请求
+
+    // 检查 UUID 是否存在
+    if (!mgr.getTodayDailyReportUuid().isEmpty()) {
+        qDebug() << "今日日报 UUID 已存在，直接同步";
+        mgr.syncDailyReport(mgr.getTodayDailyReportUuid(), today);
+        m_isSyncRequest = false;  // 立即重置
+    } else {
+        qDebug() << "今日日报 UUID 不存在，获取列表查找";
+        apiManager->getDailyReportList(1, 50);
+        // m_isSyncRequest 保持 true，等待回调处理
+    }
 }
 
 void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
