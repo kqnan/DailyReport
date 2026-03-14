@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , activeSession(nullptr)
     , apiManager(&ApiManager::instance())
+    , hasTriedCreateTodayReport(false)
 {
     initUI();
     loadSessions(getCurrentDate());
@@ -616,8 +617,26 @@ void MainWindow::onDailyReportCreateFailed(const QString& error) {
     // Check if it's "already exists" error
     if (error.contains("已存在") || error.contains("重复")) {
         qDebug() << "日报已存在，不重试创建，直接同步本地会话...";
-        // Get details for today to sync with existing report
-        CloudSessionManager::instance().loadTodaySessions();
+        // We know the daily report exists, but we don't have its UUID.
+        // The issue is the API response doesn't include the UUID when creating.
+        // We need to get the report list to find the UUID, but that may return empty.
+        //
+        // Solution: Call getDailyReportList but limit retries to prevent loop.
+        // The list API should return the report if it exists.
+        // If list is empty after creation, the report might have been created by another device.
+
+        // Only retry once to avoid infinite loop
+        static bool hasRetried = false;
+        if (!hasRetried) {
+            hasRetried = true;
+            qDebug() << "获取日报列表以找到UUID...";
+            apiManager->getDailyReportList(1, 50);
+        } else {
+            qDebug() << "已重试过，放弃获取列表，仅清空本地缓存避免循环";
+            // Clear today's buffer to prevent recurring sync attempts
+            CloudSessionManager::instance().clearBuffer();
+            hasRetried = false; // Reset for next time
+        }
     } else {
         // Other error, show to user
         QMessageBox::warning(this, "同步失败", error);

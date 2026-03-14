@@ -382,18 +382,19 @@ private slots:
         QCOMPARE(obj["message"].toString(), QString("保存成功！"));
     }
 
-    // Test create日报 response - already exists (statusCode 300)
+    // Test create日报 response - already exists (API 7: duplicate test)
+    // Note: According to API documentation API-7, even when report exists,
+    // the API returns statusCode=200 with message "保存成功！"
     void test_create_daily_report_already_exists_response() {
-        QByteArray response = R"({"title":"操作提示","message":"2026-03-14已存在日报，请勿重复添加！","statusCode":300})";
+        QByteArray response = R"({"title":"操作提示","message":"保存成功！","statusCode":200})";
 
         QJsonParseError parseError;
         QJsonDocument doc = QJsonDocument::fromJson(response, &parseError);
         QVERIFY(parseError.error == QJsonParseError::NoError);
 
         QJsonObject obj = doc.object();
-        QCOMPARE(obj["statusCode"].toInt(), 300);
-        QString message = obj["message"].toString();
-        QVERIFY(message.contains("已存在"));
+        QCOMPARE(obj["statusCode"].toInt(), 200);  // API returns 200 even for duplicate
+        QCOMPARE(obj["message"].toString(), QString("保存成功！"));
     }
 
     // Test create日报 response - invalid JSON
@@ -520,4 +521,5 @@ private slots:
 };
 
 QTEST_MAIN(TestApiManager)
+
 #include "test_apimanager.moc"
