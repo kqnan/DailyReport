@@ -518,52 +518,50 @@ void MainWindow::onSync() {
 void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
     qDebug() << "获取日报列表成功，共" << reports.size() << "条记录";
 
-    // Print raw response for debugging
-    QJsonDocument doc;
-    doc.setArray(reports);
-    qDebug() << "日报列表原始响应:" << doc.toJson(QJsonDocument::Indented);
-
     QString today = getCurrentDate();
     CloudSessionManager& mgr = CloudSessionManager::instance();
 
-    // Parse all daily report details for loading history
+    // 1. 遍历加载所有日报详情（历史数据）
     for (const QJsonValue& value : reports) {
         QJsonObject report = value.toObject();
         QString date = report["dailyReportDate"].toString();
         mgr.loadDailyReportDetails(date);
     }
 
-    // Check if today's report UUID is already set
-    if (mgr.getTodayDailyReportUuid().isEmpty()) {
-        bool foundToday = false;
-        for (const QJsonValue& value : reports) {
-            QJsonObject report = value.toObject();
-            QString date = report["dailyReportDate"].toString();
-            if (date == today) {
-                mgr.setTodayDailyReport(
-                    report["uuid"].toString(),
-                    report["month"].toString(),
-                    report["week"].toString()
-                );
-                qDebug() << "找到今日日报，已设置 UUID";
-                foundToday = true;
-                break;
-            }
-        }
-
-        // 今日日报不存在，需要创建
-        if (!foundToday) {
-            qDebug() << "今日日报不存在，开始创建...";
-            mgr.createTodayDailyReport();
-            return; // 等待创建成功后再同步
+    // 2. 查找今日日报
+    bool foundToday = false;
+    for (const QJsonValue& value : reports) {
+        QJsonObject report = value.toObject();
+        if (report["dailyReportDate"].toString() == today) {
+            mgr.setTodayDailyReport(
+                report["uuid"].toString(),
+                report["month"].toString(),
+                report["week"].toString()
+            );
+            qDebug() << "找到今日日报，已记录 UUID";
+            foundToday = true;
+            break;
         }
     }
 
-    // UUID 已设置（或刚设置），同步本地会话到云端
-    mgr.syncToday();
-
-    // Load recent days' sessions
-    mgr.loadRecentDaysSessions(3);
+    // 3. 根据请求来源决定是否执行创建/同步
+    if (m_isSyncRequest) {
+        if (!foundToday) {
+            qDebug() << "今日日报不存在，开始创建...";
+            mgr.createTodayDailyReport();
+            return;  // 等待创建成功后再同步
+        }
+        qDebug() << "找到今日日报，开始同步...";
+        mgr.syncToday();
+        m_isSyncRequest = false;  // 重置标志
+    } else {
+        // 登录请求：只记录 UUID 和加载数据，不操作
+        if (foundToday) {
+            qDebug() << "登录后找到今日日报，仅记录 UUID（等待用户点击同步）";
+        } else {
+            qDebug() << "登录后未找到今日日报（等待用户点击同步后创建）";
+        }
+    }
 }
 
 void MainWindow::onDailyReportCreated(const QString& message, const QString& status) {
@@ -582,5 +580,6 @@ void MainWindow::onDailyReportCreated(const QString& message, const QString& sta
 
 void MainWindow::onDailyReportCreateFailed(const QString& error) {
     qDebug() << "日报创建失败:" << error;
+    m_isSyncRequest = false;  // 重置标志
     QMessageBox::warning(this, "同步失败", error);
 }
