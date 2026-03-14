@@ -11,10 +11,12 @@
 |---------|-----|------|------|
 | 获取验证码 | `/system/genCodes` | GET | 无 |
 | JWT登录 | `/system/jwtLogin` | POST | 无 |
-| 获取日报列表 | `/office/shiquOaDaily/getPageSet` | GET | Cookie: token |
+| 获取日报列表 | `/office/shiquOaDaily/getPageSet` | POST | Cookie: token |
 | 创建日报 | `/office/shiquOaDaily/save` | POST | Cookie: token |
 | 更新日报（同步） | `/office/shiquOaDaily/update` | POST | Cookie: token |
 | 获取日报详情 | `/office/shiquOaDailyTask/getListDay` | POST | Cookie: token |
+
+**注意:** 创建日报和更新日报接口需要同时传入 `dailyReportDate` (日期) 和 `week` (星期)，**两者必须对应**。例如 2026-03-14 必须对应 "星期五"。
 
 ---
 
@@ -56,6 +58,34 @@ Cookie: token={jwt_token}
   "message": "错误信息"
 }
 ```
+
+### 日期与星期对应说明
+
+**重要:** 某些接口（创建日报、更新日报）的请求参数同时包含日期 (`dailyReportDate`) 和星期 (`week`)，**两者必须对应起来**，否则可能导致数据不一致。
+
+**注意事项:**
+1. **日期格式**: `YYYY-MM-DD` (例如: `2026-03-14`)
+2. **星期格式**: 中文格式，使用北京时间计算
+   - "星期一"、"星期二"、"星期三"、"星期四"、"星期五"、"星期六"、"星期日"
+3. **时区要求**: 日期和星期的计算应使用**北京时间 (Asia/Shanghai)**
+
+| 日期示例 | 正确的星期 | 错误的星期 |
+|---------|-----------|-----------|
+| 2026-03-14 | 星期六 | 星期五 |
+| 2026-03-13 | 星期五 | 星期六 |
+| 2026-03-12 | 星期四 | 星期三 |
+
+**错误示例：**
+```
+dailyReportDate=2026-03-14&week=星期五  # 错误：2026-03-14 实际是星期六
+```
+
+**正确示例：**
+```
+dailyReportDate=2026-03-14&week=星期六  # 正确：与实际星期一致
+```
+
+**建议:** 使用 `date +%Y-%m-%d` 获取日期，使用 `date +%A` (需设置时区为 Asia/Shanghai) 获取星期，确保两者基于同一时区计算。
 
 ### 时间格式规范
 
@@ -190,6 +220,8 @@ Method: POST
 ```
 
 **注意:** 虽然代码中使用 GET 方法，但实际测试发现需要使用 POST 方法，否则返回 300 错误 "Request method 'GET' not supported"。
+
+**重要:** 该接口不涉及日期和星期参数，无需考虑时区问题。
 
 ### 请求参数 (form-urlencoded)
 
@@ -351,6 +383,11 @@ Cookie: token={jwt_token}
 ### 使用场景
 
 当日报不存在时，创建新的日报记录。
+
+**重要提示:**
+- `dailyReportDate` 和 `week` 必须对应（例如 2026-03-14 对应 "星期五"）
+- 若日报已存在，API 返回 statusCode=300，错误信息为 "xxx已存在日报，请勿重复添加！"
+- 创建成功后建议调用"获取日报列表"获取新的日报UUID
 
 ### 示例
 
