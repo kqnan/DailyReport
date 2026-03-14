@@ -562,25 +562,12 @@ void MainWindow::onDailyReportCreated(const QString& message, const QString& sta
         return;
     }
 
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(message.toUtf8(), &parseError);
-    if (parseError.error == QJsonParseError::NoError && doc.isObject()) {
-        QJsonObject obj = doc.object();
-        QString uuid = obj["uuid"].toString();
-        if (!uuid.isEmpty()) {
-            CloudSessionManager::instance().setTodayDailyReport(
-                uuid,
-                CloudSessionManager::instance().getTodayMonth(),
-                CloudSessionManager::instance().getTodayWeek()
-            );
-            CloudSessionManager::instance().syncToday();
-            return;
-        }
-    }
-
-    qDebug() << "创建成功但未返回UUID，无法继续同步";
-    QMessageBox::warning(this, "同步失败", "创建日报成功但未返回UUID，请重试");
+    qDebug() << "日报创建成功，获取日报列表以提取 UUID...";
+    // 根据 API 文档，创建日报响应不包含 UUID
+    // 需要调用获取日报列表 API，遍历日期为今天的日报获取 UUID
+    apiManager->getDailyReportList(1, 50);
 }
+
 
 void MainWindow::onDailyReportCreateFailed(const QString& error) {
     qDebug() << "日报创建失败:" << error;
