@@ -271,6 +271,7 @@ void ApiManager::syncDailyReport(const QString& uuid, const QString& applicantId
     QUrl url("https://oa.zhilehuo.com/office/shiquOaDaily/update");
     QUrlQuery query;
     query.addQueryItem("uuid", uuid);
+    query.addQueryItem("i", QString::number(tasks.size()));
     query.addQueryItem("applicantId", applicantId);
     query.addQueryItem("applicantName", applicantName);
     query.addQueryItem("dailyReportDate", dailyReportDate);
