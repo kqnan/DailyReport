@@ -70,6 +70,24 @@ add_executable(test_login
     src/utils.cpp
 )
 
+add_executable(test_e2e
+    tests/test_e2e.cpp
+    src/mainwindow.h
+    src/mainwindow.cpp
+    src/datamodel.h
+    src/datamodel.cpp
+    src/sessionmanager.h
+    src/sessionmanager.cpp
+    src/cloudsessionmanager.h
+    src/cloudsessionmanager.cpp
+    src/apimanager.h
+    src/apimanager.cpp
+    src/utils.h
+    src/utils.cpp
+    src/logindialog.h
+    src/logindialog.cpp
+)
+
 target_link_libraries(test_apimanager PRIVATE
     Qt6::Widgets
     Qt6::Core
@@ -78,6 +96,13 @@ target_link_libraries(test_apimanager PRIVATE
 )
 
 target_link_libraries(test_login PRIVATE
+    Qt6::Widgets
+    Qt6::Core
+    Qt6::Network
+    Qt6::Test
+)
+
+target_link_libraries(test_e2e PRIVATE
     Qt6::Widgets
     Qt6::Core
     Qt6::Network
