@@ -55,9 +55,7 @@ void CloudSessionManager::setTodayDailyReport(const QString& uuid, const QString
 void CloudSessionManager::loadTodaySessions() {
     QString today = getCurrentDate();
     if (todayDailyReportUuid.isEmpty()) {
-        qDebug() << "今日日报UUID未设置，尝试创建日报...";
-        // Try to create today's daily report if it doesn't exist
-        createTodayDailyReportIfNotExist();
+        qDebug() << "今日日报UUID未设置，无法加载详情";
         return;
     }
 
@@ -85,29 +83,57 @@ void CloudSessionManager::loadRecentDaysSessions(int days) {
     }
 }
 
-void CloudSessionManager::createTodayDailyReportIfNotExist() {
+void CloudSessionManager::createTodayDailyReport() {
     QString today = getCurrentDate();
-    if (todayDailyReportUuid.isEmpty()) {
-        qDebug() << "创建今日日报...";
-        qDebug() << "申请人:" << applicantId << ":" << applicantName;
 
-        // Use local calculation for month and week
-        QString month = today.left(7);  // "2026-03"
-        QString week = getCurrentDayOfWeek(today);  // "星期三"
+    qDebug() << "创建今日日报...";
+    qDebug() << "申请人:" << applicantId << ":" << applicantName;
 
-        qDebug() << "日期:" << today << " 月份:" << month << " 周:" << week;
+    // Use local calculation for month and week
+    QString month = today.left(7);  // "2026-03"
+    QString week = getCurrentDayOfWeek(today);  // "星期三"
 
-        // Create empty task list for initial creation
-        QList<QPair<QString, double>> tasks;
-        ApiManager::instance().createDailyReport(
-            applicantId,
-            applicantName,
-            today,
-            month,
-            week,
-            tasks
-        );
+    qDebug() << "日期:" << today << " 月份:" << month << " 周:" << week;
+
+    // Create empty task list for initial creation
+    QList<QPair<QString, double>> tasks;
+    ApiManager::instance().createDailyReport(
+        applicantId,
+        applicantName,
+        today,
+        month,
+        week,
+        tasks
+    );
+}
+
+void CloudSessionManager::checkAndSyncTodayDailyReport(const QJsonArray& reports) {
+    QString today = getCurrentDate();
+
+    // Check if today's report already has UUID set
+    if (!todayDailyReportUuid.isEmpty()) {
+        qDebug() << "今日日报UUID已设置，跳过检查";
+        return;
     }
+
+    // Find today's report in the list
+    for (const QJsonValue& value : reports) {
+        QJsonObject report = value.toObject();
+        if (report["dailyReportDate"].toString() == today) {
+            setTodayDailyReport(
+                report["uuid"].toString(),
+                report["month"].toString(),
+                report["week"].toString()
+            );
+            qDebug() << "找到今日日报并已设置 UUID";
+
+            // Sync today's sessions
+            syncToday();
+            return;
+        }
+    }
+
+    qDebug() << "今日日报不存在，等待用户点击同步后创建";
 }
 
 void CloudSessionManager::addSession(const WorkSession& session) {

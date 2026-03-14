@@ -19,7 +19,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , activeSession(nullptr)
     , apiManager(&ApiManager::instance())
-    , hasTriedCreateTodayReport(false)
 {
     initUI();
     loadSessions(getCurrentDate());
@@ -513,132 +512,64 @@ void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
     doc.setArray(reports);
     qDebug() << "日报列表原始响应:" << doc.toJson(QJsonDocument::Indented);
 
-    // If list is empty, user has no reports yet
     QString today = getCurrentDate();
     CloudSessionManager& mgr = CloudSessionManager::instance();
 
-    // Check if there are local sessions to sync
-    bool hasLocalSessions = mgr.getSessionCount(today) > 0;
-
-    if (reports.isEmpty()) {
-        if (hasLocalSessions) {
-            qDebug() << "日报列表为空但有本地会话，直接尝试创建日报...";
-            // Try to create today's report
-            mgr.createTodayDailyReportIfNotExist();
-        } else {
-            qDebug() << "日报列表为空，暂无日报记录";
-            // Load recent days' sessions from local buffer
-            mgr.loadRecentDaysSessions(3);
-        }
-        return;
-    }
-
-    // Find today's daily report
-    bool foundTodayReport = false;
+    // Parse all daily report details for loading history
     for (const QJsonValue& value : reports) {
         QJsonObject report = value.toObject();
         QString date = report["dailyReportDate"].toString();
-        qDebug() << "日报:" << date << "创建人:" << report["creator"].toString();
+        mgr.loadDailyReportDetails(date);
+    }
 
-        if (date == today) {
-            // Set today's daily report info for syncing
-            mgr.setTodayDailyReport(
-                report["uuid"].toString(),
-                report["month"].toString(),
-                report["week"].toString()
-            );
-            qDebug() << "找到今日日报:" << today;
-            foundTodayReport = true;
+    // Check if today's report is already handled by syncToday()
+    if (mgr.getTodayDailyReportUuid().isEmpty()) {
+        for (const QJsonValue& value : reports) {
+            QJsonObject report = value.toObject();
+            if (report["dailyReportDate"].toString() == today) {
+                mgr.setTodayDailyReport(
+                    report["uuid"].toString(),
+                    report["month"].toString(),
+                    report["week"].toString()
+                );
+                qDebug() << "找到今日日报，已设置 UUID";
+                break;
+            }
         }
     }
 
-    // If today's report not found, create it
-    if (!foundTodayReport) {
-        qDebug() << "今日日报不存在，尝试创建...";
-        mgr.createTodayDailyReportIfNotExist();
-        return;  // Wait for create response, then sync
-    }
-
-    // Load recent days' sessions (today and previous 2 days)
+    // Load recent days' sessions
     mgr.loadRecentDaysSessions(3);
-
-    // Load today's sessions after getting the report list
-    mgr.loadTodaySessions();
-
-    // Sync today's sessions if there are any unsynced sessions in buffer
-    mgr.syncToday();
 }
 
 void MainWindow::onDailyReportCreated(const QString& message, const QString& status) {
-    qDebug() << "日报创建成功:" << message << " " << status;
+    if (status != "创建成功") {
+        qDebug() << "日报创建失败:" << message;
+        QMessageBox::warning(this, "同步失败", message);
+        return;
+    }
 
-    // Try to parse the response as JSON first to get the UUID
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(message.toUtf8(), &parseError);
     if (parseError.error == QJsonParseError::NoError && doc.isObject()) {
         QJsonObject obj = doc.object();
         QString uuid = obj["uuid"].toString();
         if (!uuid.isEmpty()) {
-            qDebug() << "从响应中提取UUID:" << uuid;
-            CloudSessionManager::instance().setTodayDailyReport(uuid,
+            CloudSessionManager::instance().setTodayDailyReport(
+                uuid,
                 CloudSessionManager::instance().getTodayMonth(),
-                CloudSessionManager::instance().getTodayWeek());
-
-            // Now sync today's sessions
+                CloudSessionManager::instance().getTodayWeek()
+            );
             CloudSessionManager::instance().syncToday();
             return;
         }
     }
 
-    // Fallback: if message starts with "create;", extract UUID
-    if (message.startsWith("create;")) {
-        QString uuid = message.mid(7);
-        qDebug() << "从create;前缀提取UUID:" << uuid;
-        CloudSessionManager::instance().setTodayDailyReport(uuid,
-            CloudSessionManager::instance().getTodayMonth(),
-            CloudSessionManager::instance().getTodayWeek());
-
-        // Now sync today's sessions
-        CloudSessionManager::instance().syncToday();
-        return;
-    }
-
-    // If we can't extract UUID, the API created the report but didn't return it.
-    // Call getDailyReportList to fetch the newly created report and get its UUID.
-    // This prevents an infinite loop when the first creation succeeds but response
-    // doesn't contain UUID, and subsequent sync attempts find "report already exists".
-    qDebug() << "创建成功但未返回UUID，获取日报列表以提取新创建的日报...";
-    apiManager->getDailyReportList(1, 50);
+    qDebug() << "创建成功但未返回UUID，无法继续同步";
+    QMessageBox::warning(this, "同步失败", "创建日报成功但未返回UUID，请重试");
 }
 
 void MainWindow::onDailyReportCreateFailed(const QString& error) {
     qDebug() << "日报创建失败:" << error;
-
-    // Check if it's "already exists" error
-    if (error.contains("已存在") || error.contains("重复")) {
-        qDebug() << "日报已存在，不重试创建，直接同步本地会话...";
-        // We know the daily report exists, but we don't have its UUID.
-        // The issue is the API response doesn't include the UUID when creating.
-        // We need to get the report list to find the UUID, but that may return empty.
-        //
-        // Solution: Call getDailyReportList but limit retries to prevent loop.
-        // The list API should return the report if it exists.
-        // If list is empty after creation, the report might have been created by another device.
-
-        // Only retry once to avoid infinite loop
-        static bool hasRetried = false;
-        if (!hasRetried) {
-            hasRetried = true;
-            qDebug() << "获取日报列表以找到UUID...";
-            apiManager->getDailyReportList(1, 50);
-        } else {
-            qDebug() << "已重试过，放弃获取列表，仅清空本地缓存避免循环";
-            // Clear today's buffer to prevent recurring sync attempts
-            CloudSessionManager::instance().clearBuffer();
-            hasRetried = false; // Reset for next time
-        }
-    } else {
-        // Other error, show to user
-        QMessageBox::warning(this, "同步失败", error);
-    }
+    QMessageBox::warning(this, "同步失败", error);
 }

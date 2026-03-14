@@ -67,9 +67,6 @@ private:
     // API
     ApiManager* apiManager;
 
-    // Track if we've already tried to create today's report (to prevent loops)
-    bool hasTriedCreateTodayReport = false;
-
     // Helper functions
     void initUI();
     void loadSessions(const QString &date);

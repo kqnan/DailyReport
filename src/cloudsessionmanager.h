@@ -60,8 +60,11 @@ public:
     // Sync daily report with specific UUID
     void syncDailyReport(const QString& uuid, const QString& date);
 
-    // Create today's daily report if not exists
-    void createTodayDailyReportIfNotExist();
+    // Create today's daily report (unconditional, caller decides)
+    void createTodayDailyReport();
+
+    // Check and sync today's daily report after getting list
+    void checkAndSyncTodayDailyReport(const QJsonArray& reports);
 
     // Get sessions for a date from buffer
     QList<WorkSession> getSessions(const QString& date) const;
