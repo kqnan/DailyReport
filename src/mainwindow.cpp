@@ -522,21 +522,34 @@ void MainWindow::onDailyReportListReceived(const QJsonArray& reports) {
         mgr.loadDailyReportDetails(date);
     }
 
-    // Check if today's report is already handled by syncToday()
+    // Check if today's report UUID is already set
     if (mgr.getTodayDailyReportUuid().isEmpty()) {
+        bool foundToday = false;
         for (const QJsonValue& value : reports) {
             QJsonObject report = value.toObject();
-            if (report["dailyReportDate"].toString() == today) {
+            QString date = report["dailyReportDate"].toString();
+            if (date == today) {
                 mgr.setTodayDailyReport(
                     report["uuid"].toString(),
                     report["month"].toString(),
                     report["week"].toString()
                 );
                 qDebug() << "找到今日日报，已设置 UUID";
+                foundToday = true;
                 break;
             }
         }
+
+        // 今日日报不存在，需要创建
+        if (!foundToday) {
+            qDebug() << "今日日报不存在，开始创建...";
+            mgr.createTodayDailyReport();
+            return; // 等待创建成功后再同步
+        }
     }
+
+    // UUID 已设置（或刚设置），同步本地会话到云端
+    mgr.syncToday();
 
     // Load recent days' sessions
     mgr.loadRecentDaysSessions(3);
