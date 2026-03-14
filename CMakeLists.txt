@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Core Network)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Network Test)
 
 # Find Qt6 installation directory
 get_target_property(Qt6CoreLocation Qt6::Core LOCATION)
@@ -39,6 +39,49 @@ add_executable(DailyReport
     src/apimanager.cpp
     src/logindialog.h
     src/logindialog.cpp
+)
+
+# Unit tests
+add_executable(test_apimanager
+    tests/test_apimanager.cpp
+    src/datamodel.h
+    src/datamodel.cpp
+    src/sessionmanager.h
+    src/sessionmanager.cpp
+    src/cloudsessionmanager.h
+    src/cloudsessionmanager.cpp
+    src/apimanager.h
+    src/apimanager.cpp
+    src/utils.h
+    src/utils.cpp
+)
+
+add_executable(test_login
+    tests/test_login.cpp
+    src/datamodel.h
+    src/datamodel.cpp
+    src/sessionmanager.h
+    src/sessionmanager.cpp
+    src/cloudsessionmanager.h
+    src/cloudsessionmanager.cpp
+    src/apimanager.h
+    src/apimanager.cpp
+    src/utils.h
+    src/utils.cpp
+)
+
+target_link_libraries(test_apimanager PRIVATE
+    Qt6::Widgets
+    Qt6::Core
+    Qt6::Network
+    Qt6::Test
+)
+
+target_link_libraries(test_login PRIVATE
+    Qt6::Widgets
+    Qt6::Core
+    Qt6::Network
+    Qt6::Test
 )
 
 target_link_libraries(DailyReport PRIVATE Qt6::Widgets Qt6::Core Qt6::Network)

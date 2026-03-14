@@ -96,28 +96,48 @@ void ApiManager::getDailyReportList(int page, int rows) {
     QUrlQuery query;
     query.addQueryItem("page", QString::number(page));
     query.addQueryItem("rows", QString::number(rows));
-    url.setQuery(query.query());
 
     QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     request.setRawHeader("Cookie", getCookieHeader().toUtf8());
 
-    QNetworkReply* reply = networkManager->get(request);
+    // Debug: Print request details
+    qDebug() << "=== getDailyReportList 请求详情 ===";
+    qDebug() << "URL:" << url.toString();
+    qDebug() << "请求参数:" << query.query();
+    qDebug() << "请求头 Cookie:" << getCookieHeader();
+    qDebug() << "==================================";
+
+    QNetworkReply* reply = networkManager->post(request, query.query().toUtf8());
     connect(reply, &QNetworkReply::finished, [this, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << "=== getDailyReportList 响应详情 ===";
+            qDebug() << "错误:" << reply->errorString();
+            qDebug() << "==================================";
             emit dailyReportListFailed(reply->errorString());
             reply->deleteLater();
             return;
         }
 
         QByteArray response = reply->readAll();
+
+        // Debug: Print response details
+        qDebug() << "=== getDailyReportList 响应详情 ===";
+        qDebug() << "原始响应:" << response;
+
         QJsonParseError parseError;
         QJsonDocument doc = QJsonDocument::fromJson(response, &parseError);
 
         if (parseError.error != QJsonParseError::NoError) {
+            qDebug() << "JSON 解析失败:" << parseError.errorString();
+            qDebug() << "==================================";
             emit dailyReportListFailed("Invalid JSON response");
             reply->deleteLater();
             return;
         }
+
+        qDebug() << "格式化响应:" << doc.toJson(QJsonDocument::Indented);
+        qDebug() << "==================================";
 
         QJsonObject obj = doc.object();
         QJsonArray rows = obj["rows"].toArray();

@@ -91,6 +91,12 @@ public:
     QString getTodayMonth() const { return todayMonth; }
     QString getTodayWeek() const { return todayWeek; }
 
+    // Get today's daily report UUID (for testing)
+    QString getTodayDailyReportUuid() const { return todayDailyReportUuid; }
+
+    // Get current date (for testing)
+    QString getCurrentDate() const;
+
 private:
     CloudSessionManager() = default;
 
@@ -101,6 +107,5 @@ private:
     QString todayMonth;
     QString todayWeek;
 
-    QString getCurrentDate() const;
     QString getCurrentDayOfWeek(const QString& date) const;
 };

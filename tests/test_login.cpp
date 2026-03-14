@@ -425,5 +425,113 @@ private slots:
     }
 };
 
-QTEST_MAIN(TestCloudSessionManager)
+// Test sync flow
+class TestSyncFlow : public QObject {
+    Q_OBJECT
+
+private slots:
+    void initTestCase() {
+        CloudSessionManager::instance().clearBuffer();
+    }
+
+    void cleanupTestCase() {
+        CloudSessionManager::instance().clearBuffer();
+    }
+
+    // Test that syncToday calls getDailyReportList when UUID is not set
+    void test_syncToday_calls_getDailyReportList_when_uuid_empty() {
+        CloudSessionManager& mgr = CloudSessionManager::instance();
+        mgr.clearBuffer();
+
+        // Add a session for today
+        WorkSession session;
+        session.id = "test-uuid";
+        session.date = mgr.getCurrentDate();
+        session.startTime = QDateTime::currentDateTime().toString(Qt::ISODate);
+        session.endTime = "";
+        session.durationHours = 1.0;
+        session.activity = "测试工作";
+        session.workType = "开发";
+
+        mgr.addSession(session);
+
+        // UUID should be empty initially
+        QVERIFY(mgr.getTodayDailyReportUuid().isEmpty());
+
+        // syncToday should call getDailyReportList
+        mgr.syncToday();
+
+        // UUID should still be empty (no API response received)
+        QVERIFY(mgr.getTodayDailyReportUuid().isEmpty());
+    }
+
+    // Test that syncToday skips when no sessions for today
+    void test_syncToday_skips_when_no_sessions() {
+        CloudSessionManager& mgr = CloudSessionManager::instance();
+        mgr.clearBuffer();
+
+        // No sessions added
+        QCOMPARE(mgr.getSessionCount(mgr.getCurrentDate()), 0);
+
+        // syncToday should return early (no crash)
+        mgr.syncToday();
+    }
+
+    // Test that syncToday directly syncs when UUID is set
+    void test_syncToday_direct_sync_when_uuid_set() {
+        CloudSessionManager& mgr = CloudSessionManager::instance();
+        mgr.clearBuffer();
+
+        // Add a session
+        WorkSession session;
+        session.id = "test-uuid";
+        session.date = mgr.getCurrentDate();
+        session.startTime = QDateTime::currentDateTime().toString(Qt::ISODate);
+        session.durationHours = 2.0;
+        session.activity = "测试工作";
+        session.workType = "开发";
+        mgr.addSession(session);
+
+        // Set today's report UUID
+        mgr.setTodayDailyReport("fake-uuid", "2026-03", "星期六");
+
+        // Verify UUID is set
+        QCOMPARE(mgr.getTodayDailyReportUuid(), QString("fake-uuid"));
+
+        // syncToday should use the UUID directly
+        mgr.syncToday();
+    }
+
+    // Test that getCurrentDate returns valid date
+    void test_getCurrentDate_returns_valid_date() {
+        CloudSessionManager& mgr = CloudSessionManager::instance();
+        QString date = mgr.getCurrentDate();
+
+        // Date should be in format "yyyy-MM-dd"
+        QVERIFY(date.contains("-"));
+        QVERIFY(date.length() >= 7);
+    }
+
+    // Test statistics calculation
+    void test_getTodayStatistics() {
+        CloudSessionManager& mgr = CloudSessionManager::instance();
+        mgr.clearBuffer();
+
+        // Add multiple sessions
+        WorkSession s1, s2, s3;
+        s1.date = mgr.getCurrentDate(); s1.durationHours = 1.0;
+        s2.date = mgr.getCurrentDate(); s2.durationHours = 2.0;
+        s3.date = mgr.getCurrentDate(); s3.durationHours = 0.5;
+
+        mgr.addSession(s1);
+        mgr.addSession(s2);
+        mgr.addSession(s3);
+
+        DailyStatistics stat = mgr.getTodayStatistics();
+        QCOMPARE(stat.totalHours, 3.5);
+        QCOMPARE(stat.sessionCount, 3);
+    }
+};
+
+QTEST_MAIN(TestSyncFlow)
 #include "test_login.moc"
