@@ -136,6 +136,18 @@ private slots:
         QVERIFY(jsonStr.contains("password"));
         QVERIFY(jsonStr.contains("code"));
     }
+
+    // Bug report test: 1 hour session should show 1 hour, not 0.1 hours (6 minutes)
+    void test_1_hour_session_duration() {
+        WorkSession session;
+        session.startTime = "2026-03-15T09:00:00";
+        session.endTime = "2026-03-15T10:00:00";  // 1 hour later
+
+        double duration = session.calculateDuration();
+
+        qDebug() << "1 hour session duration:" << duration;
+        QCOMPARE(duration, 1.0);
+    }
 };
 
 class TestCloudSessionManager : public QObject {
