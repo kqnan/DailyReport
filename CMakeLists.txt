@@ -88,6 +88,24 @@ add_executable(test_e2e
     src/logindialog.cpp
 )
 
+add_executable(test_duration_bug
+    tests/test_duration_bug.cpp
+    src/datamodel.h
+    src/datamodel.cpp
+)
+
+add_executable(test_empty_start
+    tests/test_empty_start.cpp
+    src/datamodel.h
+    src/datamodel.cpp
+)
+
+add_executable(test_elapsed_timer
+    tests/test_elapsed_timer.cpp
+    src/datamodel.h
+    src/datamodel.cpp
+)
+
 target_link_libraries(test_apimanager PRIVATE
     Qt6::Widgets
     Qt6::Core
@@ -106,6 +124,21 @@ target_link_libraries(test_e2e PRIVATE
     Qt6::Widgets
     Qt6::Core
     Qt6::Network
+    Qt6::Test
+)
+
+target_link_libraries(test_duration_bug PRIVATE
+    Qt6::Core
+    Qt6::Test
+)
+
+target_link_libraries(test_empty_start PRIVATE
+    Qt6::Core
+    Qt6::Test
+)
+
+target_link_libraries(test_elapsed_timer PRIVATE
+    Qt6::Core
     Qt6::Test
 )
 
