@@ -234,6 +234,8 @@ void MainWindow::onEndShift() {
         delete activeSession;
         activeSession = nullptr;
 
+        elapsedTimer->stop();
+        elapsedTimeLabel->hide();
         startButton->show();
         endButton->hide();
         startTimeLabel->setText("开始时间: -");
