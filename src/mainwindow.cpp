@@ -315,6 +315,16 @@ DailyStatistics MainWindow::getTodayStatistics() {
     return SessionManager::instance().getTodayStatistics();
 }
 
+// Elapsed time display - stub implementations for Task 1
+void MainWindow::updateElapsedTime() {
+    // TODO: Implement elapsed time update logic
+}
+
+void MainWindow::formatElapsed(double seconds) const {
+    // TODO: Implement elapsed time formatting logic
+    Q_UNUSED(seconds);
+}
+
 void MainWindow::onEditSession() {
     QListWidgetItem *item = sessionListWidget->currentItem();
     if (!item) return;
