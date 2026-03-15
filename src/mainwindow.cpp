@@ -76,6 +76,8 @@ void MainWindow::initUI() {
     totalHoursLabel = new QLabel("0小时");
     sessionCountLabel = new QLabel("0 段");
     startTimeLabel = new QLabel("开始时间: -");
+    elapsedTimeLabel = new QLabel("已工作：0 小时 0 分钟");
+    elapsedTimeLabel->hide();  // Initially hidden, shown when shift starts
 
     dateEdit = new QDateEdit(QDate::currentDate());
     dateEdit->setCalendarPopup(true);
@@ -108,6 +110,7 @@ void MainWindow::initUI() {
 
     // Start time label
     mainLayout->addWidget(startTimeLabel);
+    mainLayout->addWidget(elapsedTimeLabel);
 
     // Date selector
     QHBoxLayout *dateLayout = new QHBoxLayout();
@@ -149,6 +152,10 @@ void MainWindow::initUI() {
     connect(openFolderButton, &QPushButton::clicked, this, &MainWindow::onOpenFolder);
     connect(loginButton, &QPushButton::clicked, this, &MainWindow::onLoginClicked);
     connect(syncButton, &QPushButton::clicked, this, &MainWindow::onSync);
+
+    // Elapsed timer
+    elapsedTimer = new QTimer(this);
+    connect(elapsedTimer, &QTimer::timeout, this, &MainWindow::updateElapsedTime);
 }
 
 void MainWindow::onStartShift() {
