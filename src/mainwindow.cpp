@@ -189,6 +189,9 @@ void MainWindow::onStartShift() {
     startButton->hide();
     endButton->show();
     startTimeLabel->setText("开始时间: " + session.startTime.mid(11, 5));
+    elapsedTimeLabel->show();
+    elapsedTimeLabel->setText("已工作：0 小时 0 分钟");
+    elapsedTimer->start(60000);  // 60 seconds = 1 minute
     loadSessions(session.date);
 }
 
