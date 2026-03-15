@@ -185,6 +185,9 @@ void MainWindow::onStartShift() {
     if (activeSession) delete activeSession;
     activeSession = new WorkSession(session);
 
+    qDebug() << "[DEBUG] onStartShift: activeSession->startTime=" << activeSession->startTime;
+    qDebug() << "[DEBUG] onStartShift: activeSession->id=" << activeSession->id;
+
     // Update UI
     startButton->hide();
     endButton->show();
@@ -225,8 +228,16 @@ void MainWindow::onEndShift() {
     connect(confirmBtn, &QPushButton::clicked, dialog, &QDialog::accept);
 
     if (dialog->exec() == QDialog::Accepted) {
+        qDebug() << "[DEBUG] onEndShift: before calculate";
+        qDebug() << "  activeSession->startTime=" << activeSession->startTime;
+        qDebug() << "  activeSession->endTime (before)=" << activeSession->endTime;
+
         activeSession->endTime = QDateTime::currentDateTime().toString(Qt::ISODate);
+        qDebug() << "  activeSession->endTime (after)=" << activeSession->endTime;
+
         activeSession->durationHours = activeSession->calculateDuration();
+        qDebug() << "  activeSession->durationHours=" << activeSession->durationHours;
+
         activeSession->activity = activityEdit->toPlainText();
         activeSession->workType = workTypeCombo->currentText();
 
