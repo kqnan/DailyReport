@@ -161,18 +161,18 @@ void MainWindow::initUI() {
 void MainWindow::onStartShift() {
     CloudSessionManager &mgr = CloudSessionManager::instance();
 
-    // Check for existing active session in selected date
-    QString selectedDate = dateEdit->date().toString("yyyy-MM-dd");
-    WorkSession existing = mgr.getActiveSessionForDate(selectedDate);
+    // Check for existing active session for TODAY (new sessions always use today's date)
+    QString today = QDateTime::currentDateTime().toString("yyyy-MM-dd");
+    WorkSession existing = mgr.getActiveSessionForDate(today);
     if (!existing.id.isEmpty()) {
         QMessageBox::warning(this, "错误", "已经有进行中的上班记录，请先下班");
         return;
     }
 
-    // Create new session
+    // Create new session with today's date (independent of calendar selection)
     WorkSession session;
     session.id = QUuid::createUuid().toString().mid(1, 36);
-    session.date = selectedDate;
+    session.date = today;
     session.startTime = QDateTime::currentDateTime().toString(Qt::ISODate);
     session.endTime = "";
     session.durationHours = 0;
