@@ -2,6 +2,7 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QLabel>
+#include <QTimer>
 #include <QDateEdit>
 #include <QListWidget>
 #include <QComboBox>
@@ -33,6 +34,7 @@ private slots:
     void onDailyReportCreateFailed(const QString& error);
     void onSync();
     void setupApiConnections();
+    void updateElapsedTime();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -58,6 +60,8 @@ private:
     QLabel *sessionCountLabel;
     QLabel *startTimeLabel;
     QLabel *statusLabel;
+    QLabel *elapsedTimeLabel;
+    QTimer *elapsedTimer;
 
     // Date selector
     QDateEdit *dateEdit;
@@ -74,5 +78,6 @@ private:
     void initUI();
     void loadSessions(const QString &date);
     QString formatDuration(double hours) const;
+    void formatElapsed(double seconds) const;
     DailyStatistics getTodayStatistics();
 };
