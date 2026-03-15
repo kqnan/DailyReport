@@ -324,12 +324,26 @@ DailyStatistics MainWindow::getTodayStatistics() {
 
 // Elapsed time display - stub implementations for Task 1
 void MainWindow::updateElapsedTime() {
-    // TODO: Implement elapsed time update logic
+    if (!activeSession || activeSession->startTime.isEmpty()) return;
+
+    QDateTime start = QDateTime::fromString(activeSession->startTime, Qt::ISODate);
+    QDateTime now = QDateTime::currentDateTime();
+
+    if (!start.isValid()) return;
+
+    double seconds = start.secsTo(now);
+    if (seconds < 0) seconds = 0;  // Prevent negative
+
+    formatElapsed(seconds);
 }
 
 void MainWindow::formatElapsed(double seconds) const {
-    // TODO: Implement elapsed time formatting logic
-    Q_UNUSED(seconds);
+    if (!elapsedTimeLabel || !activeSession) return;
+
+    int hours = static_cast<int>(seconds / 3600);
+    int minutes = static_cast<int>((static_cast<int>(seconds) % 3600) / 60);
+
+    elapsedTimeLabel->setText(QString("已工作：%1 小时%2 分钟").arg(hours).arg(minutes));
 }
 
 void MainWindow::onEditSession() {
