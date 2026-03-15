@@ -106,6 +106,20 @@ add_executable(test_elapsed_timer
     src/datamodel.cpp
 )
 
+add_executable(test_session_date
+    tests/test_session_date.cpp
+    src/datamodel.h
+    src/datamodel.cpp
+    src/sessionmanager.h
+    src/sessionmanager.cpp
+    src/cloudsessionmanager.h
+    src/cloudsessionmanager.cpp
+    src/apimanager.h
+    src/apimanager.cpp
+    src/utils.h
+    src/utils.cpp
+)
+
 target_link_libraries(test_apimanager PRIVATE
     Qt6::Widgets
     Qt6::Core
@@ -139,6 +153,13 @@ target_link_libraries(test_empty_start PRIVATE
 
 target_link_libraries(test_elapsed_timer PRIVATE
     Qt6::Core
+    Qt6::Test
+)
+
+target_link_libraries(test_session_date PRIVATE
+    Qt6::Widgets
+    Qt6::Core
+    Qt6::Network
     Qt6::Test
 )
 
