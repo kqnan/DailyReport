@@ -490,6 +490,7 @@ void MainWindow::onExport() {
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (activeSession) {
         // Auto-end active session
+        if (elapsedTimer) elapsedTimer->stop();
         activeSession->endTime = QDateTime::currentDateTime().toString(Qt::ISODate);
         activeSession->durationHours = activeSession->calculateDuration();
         activeSession->activity = "工作片段";
