@@ -129,8 +129,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Qt
-        run: |
-          brew install qt@6
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.6.0'
+          host: 'mac'
+          target: 'desktop'
+          arch: 'clang_64'
+          args: '--donotinstallupdatedcomponents'
 
       - name: Configure CMake
         run: |
@@ -144,12 +149,62 @@ jobs:
 
       - name: Deploy Qt dependencies
         run: |
-          # TODO: Implement macOS deployment
-          echo "macOS deployment not implemented yet"
+          # Use macdeployqt to create app bundle with dependencies
+          qtPath="${QT_ROOT_DIR}"
+          echo "Qt install dir: $qtPath"
+
+          # Create app bundle directory structure
+          appBundle="build/DailyReport.app"
+          mkdir -p "$appBundle/Contents/MacOS"
+          mkdir -p "$appBundle/Contents/Resources"
+
+          # Copy executable
+          cp build/DailyReport "$appBundle/Contents/MacOS/"
+
+          # Create Info.plist
+          cat > "$appBundle/Contents/Info.plist" << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleExecutable</key>
+              <string>DailyReport</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.dailyreport.app</string>
+              <key>CFBundleName</key>
+              <string>DailyReport</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleShortVersionString</key>
+              <string>1.0.0</string>
+          </dict>
+          </plist>
+          EOF
+
+          # Run macdeployqt to bundle Qt libraries
+          macdeployqt="$qtPath/bin/macdeployqt"
+          if [ -f "$macdeployqt" ]; then
+            echo "Running macdeployqt..."
+            "$macdeployqt" "$appBundle" -dmg
+          else
+            echo "macdeployqt not found, copying Qt libraries manually..."
+            # Copy Qt frameworks
+            mkdir -p "$appBundle/Contents/Frameworks"
+            for framework in QtCore QtWidgets QtGui QtNetwork; do
+              if [ -d "$qtPath/lib/${framework}.framework" ]; then
+                cp -R "$qtPath/lib/${framework}.framework" "$appBundle/Contents/Frameworks/"
+              fi
+            done
+          fi
+
+          # Create zip for artifact upload
+          cd build && zip -r DailyReport-macos.zip DailyReport.app
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: qt-build-macos
           path: |
-            build/DailyReport
+            build/DailyReport.app
+            build/DailyReport-macos.zip
+            build/*.dmg
