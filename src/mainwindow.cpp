@@ -392,10 +392,19 @@ void MainWindow::onEditSession() {
     workTypeCombo->addItems({"开发", "会议", "调试", "文档", "其他"});
     workTypeCombo->setCurrentText(session->workType);
 
+    // 添加工作时长编辑框
+    QLineEdit *durationEdit = new QLineEdit();
+    durationEdit->setText(QString::number(session->durationHours, 'f', 1));
+    QDoubleValidator *validator = new QDoubleValidator(0.1, 24.0, 1, durationEdit);
+    validator->setNotation(QDoubleValidator::StandardNotation);
+    durationEdit->setValidator(validator);
+
     layout->addWidget(new QLabel("工作内容:"));
     layout->addWidget(activityEdit);
     layout->addWidget(new QLabel("工作类型:"));
     layout->addWidget(workTypeCombo);
+    layout->addWidget(new QLabel("工作时长(小时):"));
+    layout->addWidget(durationEdit);
 
     QHBoxLayout *btnLayout = new QHBoxLayout();
     QPushButton *cancelBtn = new QPushButton("取消");
