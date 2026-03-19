@@ -417,6 +417,15 @@ void MainWindow::onEditSession() {
     connect(saveBtn, &QPushButton::clicked, dialog, &QDialog::accept);
 
     if (dialog->exec() == QDialog::Accepted) {
+        double newDuration = durationEdit->text().toDouble();
+
+        // 计算新的结束时间: startTime + durationHours
+        QDateTime startDt = QDateTime::fromString(session->startTime, Qt::ISODate);
+        int secondsToAdd = qRound(newDuration * 3600);  // 小时转秒
+        QDateTime newEndDt = startDt.addSecs(secondsToAdd);
+
+        session->durationHours = newDuration;
+        session->endTime = newEndDt.toString(Qt::ISODate);
         session->activity = activityEdit->toPlainText();
         session->workType = workTypeCombo->currentText();
 
