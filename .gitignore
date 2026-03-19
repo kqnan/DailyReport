@@ -26,3 +26,6 @@ build/
 后端接口.md
 docs/API接口文档.md
 docs/api.yaml
+
+# Worktrees
+.worktrees/
