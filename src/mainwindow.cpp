@@ -367,6 +367,11 @@ void MainWindow::onEditSession() {
 
     if (!session) return;
 
+    // 阻止未结束会话编辑
+    if (session->endTime.isEmpty()) {
+        return;
+    }
+
     QDialog *dialog = new QDialog(this);
     dialog->setWindowTitle("编辑记录");
 
