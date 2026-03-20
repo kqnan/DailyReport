@@ -80,6 +80,6 @@ private:
     void initUI();
     void loadSessions(const QString &date);
     QString formatDuration(double hours) const;
-    void formatElapsed(double seconds) const;
+    void formatElapsed(double seconds);
     DailyStatistics getTodayStatistics();
 };
