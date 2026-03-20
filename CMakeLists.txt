@@ -43,6 +43,8 @@ add_executable(DailyReport
     src/animationutils.cpp
     src/ripplebutton.h
     src/ripplebutton.cpp
+    src/animatedlabel.h
+    src/animatedlabel.cpp
 )
 
 # Unit tests
