@@ -134,6 +134,16 @@ add_executable(test_edit_duration
     src/utils.cpp
 )
 
+add_executable(test_remember_password
+    tests/test_remember_password.cpp
+    src/logindialog.h
+    src/logindialog.cpp
+    src/apimanager.h
+    src/apimanager.cpp
+    src/utils.h
+    src/utils.cpp
+)
+
 target_link_libraries(test_apimanager PRIVATE
     Qt6::Widgets
     Qt6::Core
@@ -178,6 +188,13 @@ target_link_libraries(test_session_date PRIVATE
 )
 
 target_link_libraries(test_edit_duration PRIVATE
+    Qt6::Widgets
+    Qt6::Core
+    Qt6::Network
+    Qt6::Test
+)
+
+target_link_libraries(test_remember_password PRIVATE
     Qt6::Widgets
     Qt6::Core
     Qt6::Network

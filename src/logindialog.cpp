@@ -1,5 +1,8 @@
 #include "logindialog.h"
 #include <QMessageBox>
+#include <QFile>
+#include <QTextStream>
+#include "utils.h"
 
 LoginDialog::LoginDialog(QWidget *parent)
     : QDialog(parent)
@@ -43,6 +46,10 @@ LoginDialog::LoginDialog(QWidget *parent)
     buttonLayout->addWidget(loginButton);
     layout->addLayout(buttonLayout);
 
+    // Add remember password checkbox
+    rememberCheckBox = new QCheckBox("记住密码");
+    layout->addWidget(rememberCheckBox);
+
     layout->addWidget(statusLabel);
 
     setLayout(layout);
@@ -60,6 +67,9 @@ LoginDialog::LoginDialog(QWidget *parent)
     });
     connect(apiManager, &ApiManager::loginSuccess, this, &LoginDialog::onLoginSuccess);
     connect(apiManager, &ApiManager::loginFailed, this, &LoginDialog::onLoginFailed);
+
+    // Load saved credentials if any
+    loadSavedCredentials();
 }
 
 LoginDialog::~LoginDialog() = default;
@@ -112,12 +122,128 @@ void LoginDialog::onLoginClicked() {
 void LoginDialog::onLoginSuccess(const QString& token) {
     statusLabel->setText("登录成功！");
     statusLabel->setStyleSheet("color: green;");
-    emit loginCompleted(token);  // Emit signal for parent window
-    accept();  // Close dialog with Accepted result
+
+    // Save or clear credentials based on checkbox state
+    if (rememberCheckBox->isChecked()) {
+        saveCredentials(userNameIdEdit->text(), passwordEdit->text());
+    } else {
+        clearSavedCredentials();
+    }
+
+    emit loginCompleted(token);
+    accept();
 }
 
 void LoginDialog::onLoginFailed(const QString& message) {
     statusLabel->setText("登录失败: " + message);
     statusLabel->setStyleSheet("color: red;");
     loginButton->setEnabled(true);
+}
+
+QString LoginDialog::encryptPassword(const QString& password) {
+    if (password.isEmpty()) return QString();
+
+    QString key = "DailyReport2026";
+    QByteArray result;
+    QByteArray pwdBytes = password.toUtf8();
+
+    for (int i = 0; i < pwdBytes.size(); ++i) {
+        result.append(pwdBytes[i] ^ key[i % key.length()].toLatin1());
+    }
+    return result.toBase64();
+}
+
+QString LoginDialog::decryptPassword(const QString& encrypted) {
+    if (encrypted.isEmpty()) return QString();
+
+    QString key = "DailyReport2026";
+    QByteArray encBytes = QByteArray::fromBase64(encrypted.toUtf8());
+    if (encBytes.isEmpty()) return QString();
+
+    QByteArray result;
+    for (int i = 0; i < encBytes.size(); ++i) {
+        result.append(encBytes[i] ^ key[i % key.length()].toLatin1());
+    }
+    return QString::fromUtf8(result);
+}
+
+void LoginDialog::loadSavedCredentials() {
+    QString credPath = getStorageDirectory() + "/credentials";
+    QFile file(credPath);
+
+    if (!file.exists() || !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        rememberCheckBox->setChecked(false);
+        return;
+    }
+
+    QTextStream in(&file);
+    QString content = in.readLine().trimmed();
+    file.close();
+
+    if (content.isEmpty()) {
+        rememberCheckBox->setChecked(false);
+        return;
+    }
+
+    // Parse format: username|encrypted_password
+    QStringList parts = content.split("|");
+    if (parts.size() != 2) {
+        qDebug() << "Invalid credentials format";
+        rememberCheckBox->setChecked(false);
+        file.remove(); // Remove corrupted file
+        return;
+    }
+
+    QString username = parts[0];
+    QString encryptedPwd = parts[1];
+    QString password = decryptPassword(encryptedPwd);
+
+    if (password.isEmpty()) {
+        qDebug() << "Failed to decrypt password";
+        rememberCheckBox->setChecked(false);
+        file.remove(); // Remove corrupted file
+        return;
+    }
+
+    // Fill in the credentials
+    userNameIdEdit->setText(username);
+    passwordEdit->setText(password);
+    rememberCheckBox->setChecked(true);
+}
+
+void LoginDialog::saveCredentials(const QString& username, const QString& password) {
+    if (username.isEmpty() || password.isEmpty()) return;
+
+    QString encryptedPwd = encryptPassword(password);
+    if (encryptedPwd.isEmpty()) {
+        qDebug() << "Failed to encrypt password";
+        return;
+    }
+
+    QString credPath = getStorageDirectory() + "/credentials";
+    QFile file(credPath);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open credentials file for writing:" << file.errorString();
+        return;
+    }
+
+    QTextStream out(&file);
+    out << username << "|" << encryptedPwd;
+    file.close();
+
+    qDebug() << "Credentials saved successfully";
+}
+
+void LoginDialog::clearSavedCredentials() {
+    QString credPath = getStorageDirectory() + "/credentials";
+    QFile file(credPath);
+
+    if (file.exists()) {
+        if (file.remove()) {
+            qDebug() << "Credentials file removed";
+        } else {
+            qDebug() << "Failed to remove credentials file:" << file.errorString();
+        }
+    }
 }

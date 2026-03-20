@@ -19,6 +19,7 @@ public:
     QString getPassword() const;
     QString getCode() const;
 
+    // Credential persistence functions
     void loadSavedCredentials();
     void saveCredentials(const QString& username, const QString& password);
     void clearSavedCredentials();
