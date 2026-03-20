@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "utils.h"
 #include "logindialog.h"
+#include "animationutils.h"
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QStandardPaths>
@@ -14,6 +15,7 @@
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QNetworkAccessManager>
+#include <QPropertyAnimation>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -23,6 +25,17 @@ MainWindow::MainWindow(QWidget *parent)
     initUI();
     loadSessions(getCurrentDate());
     setupApiConnections();
+
+    // Window fade-in animation
+    if (AnimationUtils::animationsEnabled()) {
+        setWindowOpacity(0.0);
+        QPropertyAnimation *fadeIn = new QPropertyAnimation(this, "windowOpacity");
+        fadeIn->setDuration(300);
+        fadeIn->setStartValue(0.0);
+        fadeIn->setEndValue(1.0);
+        fadeIn->setEasingCurve(QEasingCurve::OutCubic);
+        fadeIn->start(QAbstractAnimation::DeleteWhenStopped);
+    }
 }
 
 MainWindow::~MainWindow() {
@@ -76,7 +89,8 @@ void MainWindow::initUI() {
     totalHoursLabel = new QLabel("0小时");
     sessionCountLabel = new QLabel("0 段");
     startTimeLabel = new QLabel("开始时间: -");
-    elapsedTimeLabel = new QLabel("已工作：0 小时 0 分钟");
+    elapsedTimeLabel = new AnimatedLabel();
+    elapsedTimeLabel->setAnimationDuration(200);
     elapsedTimeLabel->hide();  // Initially hidden, shown when shift starts
 
     dateEdit = new QDateEdit(QDate::currentDate());
@@ -387,13 +401,13 @@ void MainWindow::updateElapsedTime() {
     formatElapsed(seconds);
 }
 
-void MainWindow::formatElapsed(double seconds) const {
+void MainWindow::formatElapsed(double seconds) {
     if (!elapsedTimeLabel || !activeSession) return;
 
     int hours = static_cast<int>(seconds / 3600);
     int minutes = static_cast<int>((static_cast<int>(seconds) % 3600) / 60);
 
-    elapsedTimeLabel->setText(QString("已工作：%1 小时%2 分钟").arg(hours).arg(minutes));
+    elapsedTimeLabel->setAnimatedText(QString("已工作：%1 小时%2 分钟").arg(hours).arg(minutes));
 }
 
 void MainWindow::onEditSession() {

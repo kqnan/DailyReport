@@ -13,6 +13,7 @@
 #include "apimanager.h"
 #include "cloudsessionmanager.h"
 #include "ripplebutton.h"
+#include "animatedlabel.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -61,7 +62,7 @@ private:
     QLabel *sessionCountLabel;
     QLabel *startTimeLabel;
     QLabel *statusLabel;
-    QLabel *elapsedTimeLabel;
+    AnimatedLabel *elapsedTimeLabel;
     QTimer *elapsedTimer;
 
     // Date selector
