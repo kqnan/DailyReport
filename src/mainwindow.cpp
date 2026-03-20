@@ -85,8 +85,8 @@ void MainWindow::initUI() {
     sessionListWidget = new QListWidget();
 
     // Styling
-    startButton->setStyleSheet("background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #10b981, stop:1 #059669); color: white; padding: 16px 48px; font-size: 20px; border-radius: 12px;");
-    endButton->setStyleSheet("background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ef4444, stop:1 #dc2626); color: white; padding: 16px 48px; font-size: 20px; border-radius: 12px;");
+    startButton->setObjectName("primaryButton");
+    endButton->setObjectName("dangerButton");
 
     // Layout setup
     QWidget *centralWidget = new QWidget();
@@ -156,6 +156,51 @@ void MainWindow::initUI() {
     // Elapsed timer
     elapsedTimer = new QTimer(this);
     connect(elapsedTimer, &QTimer::timeout, this, &MainWindow::updateElapsedTime);
+
+    // Apply global QSS styles
+    setStyleSheet(R"(
+        QMainWindow {
+            border-radius: 16px;
+        }
+        QPushButton {
+            border-radius: 12px;
+            border: none;
+            padding: 16px 48px;
+            font-size: 20px;
+            color: white;
+        }
+        QPushButton#primaryButton {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #10b981, stop:1 #059669);
+        }
+        QPushButton#dangerButton {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ef4444, stop:1 #dc2626);
+        }
+        QPushButton:hover#primaryButton {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #34d399, stop:1 #10b981);
+        }
+        QPushButton:hover#dangerButton {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f87171, stop:1 #ef4444);
+        }
+        QPushButton:pressed {
+            opacity: 0.8;
+        }
+        QLineEdit, QDateEdit {
+            border-radius: 8px;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+        }
+        QListWidget {
+            border-radius: 8px;
+        }
+        QListWidget::item {
+            border-radius: 8px;
+            margin: 4px;
+            padding: 8px;
+        }
+        QLabel {
+            color: #333;
+        }
+    )");
 }
 
 void MainWindow::onStartShift() {
