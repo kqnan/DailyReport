@@ -134,8 +134,8 @@ endButton->setStyleSheet("background: qlineargradient(x1:0, y1:0, x2:0, y2:1, st
 
 改为：
 ```cpp
-startButton->setProperty("class", "primary-button");
-endButton->setProperty("class", "danger-button");
+startButton->setObjectName("primaryButton");
+endButton->setObjectName("dangerButton");
 ```
 
 并更新 QSS 样式表包含：
@@ -151,14 +151,17 @@ endButton->setProperty("class", "danger-button");
             font-size: 20px;
             color: white;
         }
-        QPushButton[class="primary-button"] {
+        QPushButton#primaryButton {
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #10b981, stop:1 #059669);
         }
-        QPushButton[class="danger-button"] {
+        QPushButton#dangerButton {
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ef4444, stop:1 #dc2626);
         }
-        QPushButton:hover {
-            opacity: 0.9;
+        QPushButton:hover#primaryButton {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #34d399, stop:1 #10b981);
+        }
+        QPushButton:hover#dangerButton {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f87171, stop:1 #ef4444);
         }
         QPushButton:pressed {
             opacity: 0.8;
@@ -312,15 +315,21 @@ void RippleButton::mousePressEvent(QMouseEvent *event) {
     ripple.radius = 0;
     ripple.maxRadius = qMax(width(), height()) * 1.5;
     ripple.opacity = 1.0;
-    ripple.animation = new QPropertyAnimation(this, "");
+    ripple.animation = new QPropertyAnimation(this);
     ripple.animation->setDuration(m_rippleDuration);
     ripple.animation->setStartValue(0.0);
     ripple.animation->setEndValue(ripple.maxRadius);
     ripple.animation->setEasingCurve(QEasingCurve::OutCubic);
 
-    connect(ripple.animation, &QPropertyAnimation::valueChanged, this, [this, &ripple](const QVariant &value) {
-        ripple.radius = value.toReal();
-        ripple.opacity = 1.0 - (ripple.radius / ripple.maxRadius);
+    connect(ripple.animation, &QPropertyAnimation::valueChanged, this, [this](const QVariant &value) {
+        // Find the ripple that owns this animation
+        for (auto &r : m_ripples) {
+            if (r.animation == qobject_cast<QPropertyAnimation*>(sender())) {
+                r.radius = value.toReal();
+                r.opacity = 1.0 - (r.radius / r.maxRadius);
+                break;
+            }
+        }
         update();
     });
 
@@ -371,7 +380,7 @@ void RippleButton::removeRipple() {
 }
 ```
 
-- [ ] **Step 3: 修改 CMakeLists.txt 添加新文件**
+- [ ] **Step 3: 修改 CMakeLists.txt 添加 RippleButton 文件**
 
 在 `CMakeLists.txt` 中找到 `add_executable(DailyReport` 部分，在源文件列表中添加：
 
@@ -394,12 +403,12 @@ add_executable(DailyReport
     src/utils.h
     src/ripplebutton.cpp
     src/ripplebutton.h
-    src/animatedlabel.cpp
-    src/animatedlabel.h
     src/animationutils.cpp
     src/animationutils.h
 )
 ```
+
+**注意**：先只添加 RippleButton 和 AnimationUtils 文件，AnimatedLabel 在 Chunk 3 中创建后再添加。
 
 - [ ] **Step 4: 构建验证**
 
@@ -563,7 +572,37 @@ void AnimatedLabel::onAnimationFinished() {
 }
 ```
 
-- [ ] **Step 3: 构建验证**
+- [ ] **Step 3: 修改 CMakeLists.txt 添加 AnimatedLabel 文件**
+
+在 `CMakeLists.txt` 中更新 DailyReport 目标，添加 animatedlabel 文件：
+
+```cmake
+add_executable(DailyReport
+    src/main.cpp
+    src/mainwindow.cpp
+    src/mainwindow.h
+    src/datamodel.cpp
+    src/datamodel.h
+    src/sessionmanager.cpp
+    src/sessionmanager.h
+    src/apimanager.cpp
+    src/apimanager.h
+    src/logindialog.cpp
+    src/logindialog.h
+    src/cloudsessionmanager.cpp
+    src/cloudsessionmanager.h
+    src/utils.cpp
+    src/utils.h
+    src/ripplebutton.cpp
+    src/ripplebutton.h
+    src/animatedlabel.cpp
+    src/animatedlabel.h
+    src/animationutils.cpp
+    src/animationutils.h
+)
+```
+
+- [ ] **Step 4: 构建验证**
 
 Run: `cd /root/DailyReport/build && cmake --build . 2>&1 | tail -5`
 Expected: Build succeeds
@@ -733,9 +772,41 @@ git commit -m "feat: add AnimatedLabel and window fade-in animation"
 ### Task 7: 在登录对话框中应用样式和动画
 
 **Files:**
-- Modify: `src/logindialog.cpp`
+- Modify: `src/logindialog.h` (修改按钮类型)
+- Modify: `src/logindialog.cpp` (替换按钮创建代码，应用样式和动画)
 
-- [ ] **Step 1: 应用 QSS 样式表**
+- [ ] **Step 1: 修改 logindialog.h 添加 RippleButton**
+
+在 `src/logindialog.h` 中：
+1. 添加 `#include "ripplebutton.h"`
+2. 将 `getCodeButton` 和 `loginButton` 从 `QPushButton*` 改为 `RippleButton*`
+
+```cpp
+#include "ripplebutton.h"
+
+// ...
+
+private:
+    RippleButton *getCodeButton;  // Changed from QPushButton
+    RippleButton *loginButton;    // Changed from QPushButton
+    // ... other buttons stay as QPushButton or remove if not needed
+```
+
+- [ ] **Step 2: 修改 logindialog.cpp 使用 RippleButton**
+
+将按钮创建代码从：
+```cpp
+getCodeButton = new QPushButton("获取验证码");
+loginButton = new QPushButton("登录");
+```
+
+改为：
+```cpp
+getCodeButton = new RippleButton("获取验证码");
+loginButton = new RippleButton("登录");
+```
+
+- [ ] **Step 3: 应用 QSS 样式表**
 
 在 `src/logindialog.cpp` 的构造函数中，所有控件创建之后添加：
 
@@ -757,7 +828,7 @@ git commit -m "feat: add AnimatedLabel and window fade-in animation"
     )");
 ```
 
-- [ ] **Step 2: 添加对话框淡入动画**
+- [ ] **Step 4: 添加对话框淡入动画**
 
 在构造函数末尾添加：
 
@@ -774,23 +845,24 @@ git commit -m "feat: add AnimatedLabel and window fade-in animation"
     }
 ```
 
-- [ ] **Step 3: 添加必要的 includes**
+- [ ] **Step 5: 添加必要的 includes**
 
 在 `src/logindialog.cpp` 顶部添加：
 ```cpp
 #include "animationutils.h"
+#include "ripplebutton.h"
 #include <QPropertyAnimation>
 ```
 
-- [ ] **Step 4: 构建并验证**
+- [ ] **Step 6: 构建并验证**
 
 Run: `cd /root/DailyReport/build && cmake --build . 2>&1 | tail -5`
 Expected: Build succeeds
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/logindialog.cpp
+git add src/logindialog.h src/logindialog.cpp
 git commit -m "feat: apply QSS styles and fade-in animation to login dialog"
 ```
 
@@ -811,6 +883,7 @@ git commit -m "feat: apply QSS styles and fade-in animation to login dialog"
 
 ```cpp
 #include <QTest>
+#include <QApplication>
 #include <QMouseEvent>
 #include "../src/ripplebutton.h"
 #include "../src/animationutils.h"
@@ -861,6 +934,7 @@ QTEST_MAIN(TestRippleButton)
 
 ```cpp
 #include <QTest>
+#include <QApplication>
 #include "../src/animatedlabel.h"
 #include "../src/animationutils.h"
 
