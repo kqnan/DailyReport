@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QCheckBox>
 #include "apimanager.h"
 
 class LoginDialog : public QDialog {
@@ -17,6 +18,13 @@ public:
     QString getUserNameId() const;
     QString getPassword() const;
     QString getCode() const;
+
+    // Credential persistence functions
+    void loadSavedCredentials();
+    void saveCredentials(const QString& username, const QString& password);
+    void clearSavedCredentials();
+    QString encryptPassword(const QString& password);
+    QString decryptPassword(const QString& encrypted);
 
 signals:
     void loginCompleted(const QString& token);
@@ -35,6 +43,7 @@ private:
     QPushButton *getCodeButton;
     QPushButton *loginButton;
     QLabel *statusLabel;
+    QCheckBox *rememberCheckBox;
 
     ApiManager* apiManager;
 };
