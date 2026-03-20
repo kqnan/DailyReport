@@ -151,3 +151,84 @@ QString LoginDialog::decryptPassword(const QString& encrypted) {
     }
     return QString::fromUtf8(result);
 }
+
+void LoginDialog::loadSavedCredentials() {
+    QString credPath = getStorageDirectory() + "/credentials";
+    QFile file(credPath);
+
+    if (!file.exists() || !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        rememberCheckBox->setChecked(false);
+        return;
+    }
+
+    QTextStream in(&file);
+    QString content = in.readLine().trimmed();
+    file.close();
+
+    if (content.isEmpty()) {
+        rememberCheckBox->setChecked(false);
+        return;
+    }
+
+    // Parse format: username|encrypted_password
+    QStringList parts = content.split("|");
+    if (parts.size() != 2) {
+        qDebug() << "Invalid credentials format";
+        rememberCheckBox->setChecked(false);
+        file.remove(); // Remove corrupted file
+        return;
+    }
+
+    QString username = parts[0];
+    QString encryptedPwd = parts[1];
+    QString password = decryptPassword(encryptedPwd);
+
+    if (password.isEmpty()) {
+        qDebug() << "Failed to decrypt password";
+        rememberCheckBox->setChecked(false);
+        file.remove(); // Remove corrupted file
+        return;
+    }
+
+    // Fill in the credentials
+    userNameIdEdit->setText(username);
+    passwordEdit->setText(password);
+    rememberCheckBox->setChecked(true);
+}
+
+void LoginDialog::saveCredentials(const QString& username, const QString& password) {
+    if (username.isEmpty() || password.isEmpty()) return;
+
+    QString encryptedPwd = encryptPassword(password);
+    if (encryptedPwd.isEmpty()) {
+        qDebug() << "Failed to encrypt password";
+        return;
+    }
+
+    QString credPath = getStorageDirectory() + "/credentials";
+    QFile file(credPath);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open credentials file for writing:" << file.errorString();
+        return;
+    }
+
+    QTextStream out(&file);
+    out << username << "|" << encryptedPwd;
+    file.close();
+
+    qDebug() << "Credentials saved successfully";
+}
+
+void LoginDialog::clearSavedCredentials() {
+    QString credPath = getStorageDirectory() + "/credentials";
+    QFile file(credPath);
+
+    if (file.exists()) {
+        if (file.remove()) {
+            qDebug() << "Credentials file removed";
+        } else {
+            qDebug() << "Failed to remove credentials file:" << file.errorString();
+        }
+    }
+}
