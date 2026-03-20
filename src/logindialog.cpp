@@ -46,6 +46,10 @@ LoginDialog::LoginDialog(QWidget *parent)
     buttonLayout->addWidget(loginButton);
     layout->addLayout(buttonLayout);
 
+    // Add remember password checkbox
+    rememberCheckBox = new QCheckBox("记住密码");
+    layout->addWidget(rememberCheckBox);
+
     layout->addWidget(statusLabel);
 
     setLayout(layout);
@@ -63,6 +67,9 @@ LoginDialog::LoginDialog(QWidget *parent)
     });
     connect(apiManager, &ApiManager::loginSuccess, this, &LoginDialog::onLoginSuccess);
     connect(apiManager, &ApiManager::loginFailed, this, &LoginDialog::onLoginFailed);
+
+    // Load saved credentials if any
+    loadSavedCredentials();
 }
 
 LoginDialog::~LoginDialog() = default;
