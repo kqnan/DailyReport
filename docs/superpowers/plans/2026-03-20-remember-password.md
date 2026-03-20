@@ -268,7 +268,7 @@ git commit -m "feat: implement credential load and save functions"
 
 - [ ] **Step 2: 在构造函数中调用 loadSavedCredentials**
 
-在构造函数末尾（`onGetVerificationCode()` 之后）添加：
+在构造函数末尾，所有 UI 初始化完成后（`onGetVerificationCode()` 调用之后），添加：
 
 ```cpp
     // Load saved credentials if any
@@ -344,7 +344,6 @@ git commit -m "feat: integrate credential save logic on successful login"
 ```cpp
 #include <QTest>
 #include <QFile>
-#include <QCheckBox>
 #include "../src/logindialog.h"
 #include "../src/utils.h"
 
@@ -423,27 +422,6 @@ private slots:
         dialog.clearSavedCredentials();
 
         // File should be removed
-        QVERIFY(!QFile::exists(credPath));
-    }
-};
-
-QTEST_MAIN(TestRememberPassword)
-#include "test_remember_password.moc"
-```
-
-    void testCorruptedFile() {
-        // Create a corrupted credentials file
-        QString credPath = getStorageDirectory() + "/credentials";
-        QFile file(credPath);
-        QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
-        file.write("invalid_format_no_pipe");
-        file.close();
-
-        // Try to load - should handle gracefully
-        LoginDialog dialog;
-        dialog.loadSavedCredentials();
-
-        // File should be removed due to invalid format
         QVERIFY(!QFile::exists(credPath));
     }
 };
