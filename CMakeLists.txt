@@ -39,6 +39,10 @@ add_executable(DailyReport
     src/apimanager.cpp
     src/logindialog.h
     src/logindialog.cpp
+    src/animationutils.h
+    src/animationutils.cpp
+    src/ripplebutton.h
+    src/ripplebutton.cpp
 )
 
 # Unit tests
