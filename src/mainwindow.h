@@ -12,6 +12,7 @@
 #include "sessionmanager.h"
 #include "apimanager.h"
 #include "cloudsessionmanager.h"
+#include "ripplebutton.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -44,16 +45,16 @@ private:
     bool m_isSyncRequest = false;
 
     // Buttons
-    QPushButton *startButton;
-    QPushButton *endButton;
+    RippleButton *startButton;
+    RippleButton *endButton;
     QPushButton *editButton;
     QPushButton *deleteButton;
-    QPushButton *exportCsvButton;
-    QPushButton *exportJsonButton;
-    QPushButton *todayButton;
-    QPushButton *openFolderButton;
-    QPushButton *loginButton;
-    QPushButton *syncButton;
+    RippleButton *exportCsvButton;
+    RippleButton *exportJsonButton;
+    RippleButton *todayButton;
+    RippleButton *openFolderButton;
+    RippleButton *loginButton;
+    RippleButton *syncButton;
 
     // Labels
     QLabel *totalHoursLabel;

@@ -58,18 +58,18 @@ void MainWindow::initUI() {
     setMinimumSize(600, 500);
 
     // Create widgets
-    startButton = new QPushButton("🟢 上班");
-    endButton = new QPushButton("🔴 下班");
+    startButton = new RippleButton("🟢 上班");
+    endButton = new RippleButton("🔴 下班");
     endButton->hide();
 
     editButton = new QPushButton("编辑");
     deleteButton = new QPushButton("删除");
-    exportCsvButton = new QPushButton("📥 导出 CSV");
-    exportJsonButton = new QPushButton("📥 导出 JSON");
-    todayButton = new QPushButton("今天");
-    openFolderButton = new QPushButton("📂 打开记录文件夹");
-    loginButton = new QPushButton("🔐 登录");
-    syncButton = new QPushButton("📤 同步");
+    exportCsvButton = new RippleButton("📥 导出 CSV");
+    exportJsonButton = new RippleButton("📥 导出 JSON");
+    todayButton = new RippleButton("今天");
+    openFolderButton = new RippleButton("📂 打开记录文件夹");
+    loginButton = new RippleButton("🔐 登录");
+    syncButton = new RippleButton("📤 同步");
 
     statusLabel = new QLabel("状态: 未登录");
 
