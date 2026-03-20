@@ -33,10 +33,10 @@
 在 `src/logindialog.h` 中：
 1. 在现有 includes 后添加 `#include <QCheckBox>`
 2. 在 private 部分添加 `QCheckBox *rememberCheckBox;`
-3. 添加私有函数声明：
+3. 添加公有函数声明（方便测试）：
 
 ```cpp
-private:
+public:
     void loadSavedCredentials();
     void saveCredentials(const QString& username, const QString& password);
     void clearSavedCredentials();
@@ -342,8 +342,9 @@ git commit -m "feat: integrate credential save logic on successful login"
 创建 `tests/test_remember_password.cpp`：
 
 ```cpp
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QFile>
+#include <QCheckBox>
 #include "../src/logindialog.h"
 #include "../src/utils.h"
 
@@ -358,25 +359,21 @@ private slots:
     }
 
     void testEncryptDecrypt() {
-        // Create a temporary LoginDialog to test private methods
-        // We need to make the methods accessible for testing
         LoginDialog dialog;
-
         QString testPassword = "mySecretPassword123";
 
-        // Access private methods through public interface for testing
-        // We'll test by using save/load functionality
+        // Save credentials
         dialog.saveCredentials("testuser", testPassword);
 
         // Verify file was created
         QString credPath = getStorageDirectory() + "/credentials";
         QVERIFY(QFile::exists(credPath));
 
-        // Now create a new dialog and load credentials
+        // Create a new dialog and load credentials
         LoginDialog dialog2;
         dialog2.loadSavedCredentials();
 
-        // Verify loaded values (need to use public getters)
+        // Verify loaded values (getters read from UI fields)
         QCOMPARE(dialog2.getUserNameId(), "testuser");
         QCOMPARE(dialog2.getPassword(), testPassword);
     }
@@ -387,16 +384,52 @@ private slots:
         // Test with empty password - should not crash
         dialog.saveCredentials("testuser", "");
 
-        // File should not be created or be empty
+        // File should not contain the username with empty password
         QString credPath = getStorageDirectory() + "/credentials";
         if (QFile::exists(credPath)) {
             QFile file(credPath);
             QVERIFY(file.open(QIODevice::ReadOnly));
             QString content = QString::fromUtf8(file.readAll());
-            // Should not contain empty password entry
+            // Should not contain this user
             QVERIFY(!content.contains("testuser|"));
         }
     }
+
+    void testCorruptedFile() {
+        // Create a corrupted credentials file
+        QString credPath = getStorageDirectory() + "/credentials";
+        QFile file(credPath);
+        QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
+        file.write("invalid_format_no_pipe");
+        file.close();
+
+        // Try to load - should handle gracefully
+        LoginDialog dialog;
+        dialog.loadSavedCredentials();
+
+        // File should be removed due to invalid format
+        QVERIFY(!QFile::exists(credPath));
+    }
+
+    void testClearCredentials() {
+        LoginDialog dialog;
+
+        // Save credentials first
+        dialog.saveCredentials("testuser", "testpass");
+        QString credPath = getStorageDirectory() + "/credentials";
+        QVERIFY(QFile::exists(credPath));
+
+        // Clear credentials
+        dialog.clearSavedCredentials();
+
+        // File should be removed
+        QVERIFY(!QFile::exists(credPath));
+    }
+};
+
+QTEST_MAIN(TestRememberPassword)
+#include "test_remember_password.moc"
+```
 
     void testCorruptedFile() {
         // Create a corrupted credentials file
@@ -419,20 +452,9 @@ QTEST_MAIN(TestRememberPassword)
 #include "test_remember_password.moc"
 ```
 
-- [ ] **Step 2: 修改 logindialog.h 支持测试**
+- [ ] **Step 2: 确认函数为 public**
 
-为了让测试可以访问私有方法，需要将方法改为 protected 或添加测试友元。更简单的方案是：将加密解密函数改为 `public` 或 `protected`。
-
-修改 `src/logindialog.h`：
-```cpp
-// Change these from private to protected so tests can access them
-protected:
-    void loadSavedCredentials();
-    void saveCredentials(const QString& username, const QString& password);
-    void clearSavedCredentials();
-    QString encryptPassword(const QString& password);
-    QString decryptPassword(const QString& encrypted);
-```
+Task 1 中已将函数声明为 `public`，测试可以直接访问。无需额外修改。
 
 - [ ] **Step 3: 修改 CMakeLists.txt 添加测试**
 
