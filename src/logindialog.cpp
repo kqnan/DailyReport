@@ -1,5 +1,8 @@
 #include "logindialog.h"
 #include <QMessageBox>
+#include <QFile>
+#include <QTextStream>
+#include "utils.h"
 
 LoginDialog::LoginDialog(QWidget *parent)
     : QDialog(parent)
@@ -120,4 +123,31 @@ void LoginDialog::onLoginFailed(const QString& message) {
     statusLabel->setText("登录失败: " + message);
     statusLabel->setStyleSheet("color: red;");
     loginButton->setEnabled(true);
+}
+
+QString LoginDialog::encryptPassword(const QString& password) {
+    if (password.isEmpty()) return QString();
+
+    QString key = "DailyReport2026";
+    QByteArray result;
+    QByteArray pwdBytes = password.toUtf8();
+
+    for (int i = 0; i < pwdBytes.size(); ++i) {
+        result.append(pwdBytes[i] ^ key[i % key.length()].toLatin1());
+    }
+    return result.toBase64();
+}
+
+QString LoginDialog::decryptPassword(const QString& encrypted) {
+    if (encrypted.isEmpty()) return QString();
+
+    QString key = "DailyReport2026";
+    QByteArray encBytes = QByteArray::fromBase64(encrypted.toUtf8());
+    if (encBytes.isEmpty()) return QString();
+
+    QByteArray result;
+    for (int i = 0; i < encBytes.size(); ++i) {
+        result.append(encBytes[i] ^ key[i % key.length()].toLatin1());
+    }
+    return QString::fromUtf8(result);
 }
