@@ -122,8 +122,16 @@ void LoginDialog::onLoginClicked() {
 void LoginDialog::onLoginSuccess(const QString& token) {
     statusLabel->setText("登录成功！");
     statusLabel->setStyleSheet("color: green;");
-    emit loginCompleted(token);  // Emit signal for parent window
-    accept();  // Close dialog with Accepted result
+
+    // Save or clear credentials based on checkbox state
+    if (rememberCheckBox->isChecked()) {
+        saveCredentials(userNameIdEdit->text(), passwordEdit->text());
+    } else {
+        clearSavedCredentials();
+    }
+
+    emit loginCompleted(token);
+    accept();
 }
 
 void LoginDialog::onLoginFailed(const QString& message) {
