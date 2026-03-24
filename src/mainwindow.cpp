@@ -106,7 +106,7 @@ void MainWindow::initUI() {
         QListWidget::item {
             background-color: transparent;
             border-radius: 6px;
-            padding: 8px;
+            padding: 0px;
             margin: 2px 0;
         }
         QListWidget::item:selected {
@@ -485,7 +485,7 @@ void MainWindow::loadSessions(const QString &date) {
         // Create custom widget with vertical layout to avoid overlapping
         QWidget *itemWidget = new QWidget();
         QVBoxLayout *itemLayout = new QVBoxLayout(itemWidget);
-        itemLayout->setContentsMargins(0, 0, 0, 0);
+        itemLayout->setContentsMargins(8, 8, 8, 8);
         itemLayout->setSpacing(2);
 
         // First line: time range, duration, work type
