@@ -65,7 +65,7 @@ void RippleButton::mousePressEvent(QMouseEvent *event) {
     connect(ripple.animation, &QPropertyAnimation::finished, this, &RippleButton::removeRipple);
 
     m_ripples.append(ripple);
-    ripple.animation->start(QAbstractAnimation::DeleteWhenStopped);
+    ripple.animation->start();
 }
 
 void RippleButton::paintEvent(QPaintEvent *event) {
@@ -98,5 +98,6 @@ void RippleButton::removeRipple() {
             break;
         }
     }
+    animation->deleteLater();
     update();
 }
