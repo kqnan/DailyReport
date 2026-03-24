@@ -504,9 +504,27 @@ void MainWindow::loadSessions(const QString &date) {
         itemLayout->addWidget(activityLabel);
         itemWidget->setLayout(itemLayout);
 
+        // Ensure style is applied before calculating sizeHint
+        timeLabel->ensurePolished();
+        activityLabel->ensurePolished();
+
+        // Calculate proper sizeHint with explicit font metrics
+        QFontMetrics fm1(timeLabel->font());
+        QFontMetrics fm2(activityLabel->font());
+        int lineHeight1 = fm1.height();
+        int lineHeight2 = fm2.height();
+        int spacing = 2;
+        int totalHeight = lineHeight1 + lineHeight2 + spacing;
+
+        // Use the larger of calculated or widget's sizeHint
+        QSize hint = itemWidget->sizeHint();
+        if (hint.height() < totalHeight) {
+            hint.setHeight(totalHeight);
+        }
+
         QListWidgetItem *item = new QListWidgetItem();
         item->setData(Qt::UserRole, session.id);
-        item->setSizeHint(itemWidget->sizeHint());
+        item->setSizeHint(hint);
 
         sessionListWidget->addItem(item);
         sessionListWidget->setItemWidget(item, itemWidget);
