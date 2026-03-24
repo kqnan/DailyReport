@@ -39,6 +39,14 @@ add_executable(DailyReport
     src/apimanager.cpp
     src/logindialog.h
     src/logindialog.cpp
+    src/animationutils.h
+    src/animationutils.cpp
+    src/ripplebutton.h
+    src/ripplebutton.cpp
+    src/animatedlabel.h
+    src/animatedlabel.cpp
+    src/animatedlistwidget.h
+    src/animatedlistwidget.cpp
 )
 
 # Unit tests
@@ -86,6 +94,14 @@ add_executable(test_e2e
     src/utils.cpp
     src/logindialog.h
     src/logindialog.cpp
+    src/animationutils.h
+    src/animationutils.cpp
+    src/ripplebutton.h
+    src/ripplebutton.cpp
+    src/animatedlabel.h
+    src/animatedlabel.cpp
+    src/animatedlistwidget.h
+    src/animatedlistwidget.cpp
 )
 
 add_executable(test_duration_bug
@@ -142,6 +158,22 @@ add_executable(test_remember_password
     src/apimanager.cpp
     src/utils.h
     src/utils.cpp
+    src/animationutils.h
+    src/animationutils.cpp
+    src/ripplebutton.h
+    src/ripplebutton.cpp
+)
+
+add_executable(test_animation_widgets
+    tests/test_animation_widgets.cpp
+    src/animationutils.h
+    src/animationutils.cpp
+    src/ripplebutton.h
+    src/ripplebutton.cpp
+    src/animatedlabel.h
+    src/animatedlabel.cpp
+    src/animatedlistwidget.h
+    src/animatedlistwidget.cpp
 )
 
 target_link_libraries(test_apimanager PRIVATE
@@ -198,6 +230,12 @@ target_link_libraries(test_remember_password PRIVATE
     Qt6::Widgets
     Qt6::Core
     Qt6::Network
+    Qt6::Test
+)
+
+target_link_libraries(test_animation_widgets PRIVATE
+    Qt6::Widgets
+    Qt6::Core
     Qt6::Test
 )
 

@@ -101,7 +101,7 @@ void AnimatedListWidget::paintEvent(QPaintEvent *event) {
     opt.state |= QStyle::State_Enabled;
 
     // Draw the item background
-    if (selectionModel()->isSelected(animatingItem)) {
+    if (selectionModel()->isSelected(indexFromItem(animatingItem))) {
         opt.state |= QStyle::State_Selected;
     }
 
