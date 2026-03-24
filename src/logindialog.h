@@ -7,6 +7,7 @@
 #include <QHBoxLayout>
 #include <QCheckBox>
 #include "apimanager.h"
+#include "ripplebutton.h"
 
 class LoginDialog : public QDialog {
     Q_OBJECT
@@ -40,8 +41,8 @@ private:
     QLineEdit *userNameIdEdit;
     QLineEdit *passwordEdit;
     QLineEdit *codeEdit;
-    QPushButton *getCodeButton;
-    QPushButton *loginButton;
+    RippleButton *getCodeButton;
+    RippleButton *loginButton;
     QLabel *statusLabel;
     QCheckBox *rememberCheckBox;
 

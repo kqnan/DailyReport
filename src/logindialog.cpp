@@ -2,7 +2,10 @@
 #include <QMessageBox>
 #include <QFile>
 #include <QTextStream>
+#include <QPropertyAnimation>
+#include <QEasingCurve>
 #include "utils.h"
+#include "animationutils.h"
 
 LoginDialog::LoginDialog(QWidget *parent)
     : QDialog(parent)
@@ -10,6 +13,44 @@ LoginDialog::LoginDialog(QWidget *parent)
 {
     setWindowTitle("登录");
     setMinimumSize(300, 200);
+
+    // Apply Morandi color palette QSS styles
+    QString morandiStyle = R"(
+        QDialog {
+            background-color: #F0EDE8;
+        }
+        QLabel {
+            color: #4A4A4A;
+            font-size: 14px;
+        }
+        QLineEdit {
+            background-color: #FAF8F5;
+            border: 1px solid #D4CFC7;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: #4A4A4A;
+            font-size: 13px;
+        }
+        QLineEdit:focus {
+            border: 1px solid #6B8E6B;
+        }
+        QCheckBox {
+            color: #4A4A4A;
+            font-size: 13px;
+        }
+        QCheckBox::indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 1px solid #D4CFC7;
+            background-color: #FAF8F5;
+        }
+        QCheckBox::indicator:checked {
+            background-color: #6B8E6B;
+            border-color: #6B8E6B;
+        }
+    )";
+    setStyleSheet(morandiStyle);
 
     // Create widgets
     userNameIdEdit = new QLineEdit();
@@ -25,15 +66,55 @@ LoginDialog::LoginDialog(QWidget *parent)
     codeEdit->setPlaceholderText("验证码");
     codeEdit->setClearButtonEnabled(true);
 
-    getCodeButton = new QPushButton("获取验证码");
-    loginButton = new QPushButton("登录");
+    // Create RippleButton for "获取验证码" with Secondary color (雾蓝)
+    getCodeButton = new RippleButton("获取验证码");
+    getCodeButton->setStyleSheet(R"(
+        RippleButton {
+            background-color: #6B8BA3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+        RippleButton:hover {
+            background-color: #5A7A93;
+        }
+        RippleButton:pressed {
+            background-color: #4A6A83;
+        }
+    )");
+    getCodeButton->setRippleColor(QColor(255, 255, 255, 60));
+
+    // Create RippleButton for "登录" with Primary color (鼠尾草绿)
+    loginButton = new RippleButton("登录");
     loginButton->setDefault(true);
+    loginButton->setStyleSheet(R"(
+        RippleButton {
+            background-color: #6B8E6B;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        RippleButton:hover {
+            background-color: #5D7D5D;
+        }
+        RippleButton:pressed {
+            background-color: #4F6D4F;
+        }
+    )");
+    loginButton->setRippleColor(QColor(255, 255, 255, 80));
 
     statusLabel = new QLabel("就绪");
-    statusLabel->setStyleSheet("color: gray;");
+    statusLabel->setStyleSheet("color: #8B8680; font-size: 12px;");
 
     // Layout
     QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->setSpacing(10);
+    layout->setContentsMargins(20, 20, 20, 20);
     layout->addWidget(new QLabel("账号:"));
     layout->addWidget(userNameIdEdit);
     layout->addWidget(new QLabel("密码:"));
@@ -42,6 +123,7 @@ LoginDialog::LoginDialog(QWidget *parent)
     layout->addWidget(codeEdit);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout();
+    buttonLayout->setSpacing(10);
     buttonLayout->addWidget(getCodeButton);
     buttonLayout->addWidget(loginButton);
     layout->addLayout(buttonLayout);
@@ -63,13 +145,24 @@ LoginDialog::LoginDialog(QWidget *parent)
     connect(apiManager, &ApiManager::verificationCodeReceived, this, &LoginDialog::onVerificationCodeReceived);
     connect(apiManager, &ApiManager::verificationCodeFailed, this, [this](const QString& msg) {
         statusLabel->setText("获取验证码失败: " + msg);
-        statusLabel->setStyleSheet("color: red;");
+        statusLabel->setStyleSheet("color: #B87A7A; font-size: 12px;");
     });
     connect(apiManager, &ApiManager::loginSuccess, this, &LoginDialog::onLoginSuccess);
     connect(apiManager, &ApiManager::loginFailed, this, &LoginDialog::onLoginFailed);
 
     // Load saved credentials if any
     loadSavedCredentials();
+
+    // Window fade-in animation
+    if (AnimationUtils::animationsEnabled()) {
+        setWindowOpacity(0.0);
+        QPropertyAnimation *fadeIn = new QPropertyAnimation(this, "windowOpacity");
+        fadeIn->setDuration(300);
+        fadeIn->setStartValue(0.0);
+        fadeIn->setEndValue(1.0);
+        fadeIn->setEasingCurve(QEasingCurve::InOutQuad);
+        fadeIn->start(QPropertyAnimation::DeleteWhenStopped);
+    }
 }
 
 LoginDialog::~LoginDialog() = default;
@@ -88,13 +181,13 @@ QString LoginDialog::getCode() const {
 
 void LoginDialog::onGetVerificationCode() {
     statusLabel->setText("正在获取验证码...");
-    statusLabel->setStyleSheet("color: blue;");
+    statusLabel->setStyleSheet("color: #6B8BA3; font-size: 12px;");
     apiManager->getVerificationCode();
 }
 
 void LoginDialog::onVerificationCodeReceived(int code) {
     statusLabel->setText(QString("验证码: %1").arg(code));
-    statusLabel->setStyleSheet("color: green;");
+    statusLabel->setStyleSheet("color: #6B8E6B; font-size: 12px;");
     codeEdit->setText(QString::number(code));
 }
 
@@ -114,14 +207,14 @@ void LoginDialog::onLoginClicked() {
 
     loginButton->setEnabled(false);
     statusLabel->setText("正在登录...");
-    statusLabel->setStyleSheet("color: blue;");
+    statusLabel->setStyleSheet("color: #6B8BA3; font-size: 12px;");
 
     apiManager->login(getUserNameId(), getPassword(), getCode());
 }
 
 void LoginDialog::onLoginSuccess(const QString& token) {
     statusLabel->setText("登录成功！");
-    statusLabel->setStyleSheet("color: green;");
+    statusLabel->setStyleSheet("color: #6B8E6B; font-size: 12px;");
 
     // Save or clear credentials based on checkbox state
     if (rememberCheckBox->isChecked()) {
@@ -136,7 +229,7 @@ void LoginDialog::onLoginSuccess(const QString& token) {
 
 void LoginDialog::onLoginFailed(const QString& message) {
     statusLabel->setText("登录失败: " + message);
-    statusLabel->setStyleSheet("color: red;");
+    statusLabel->setStyleSheet("color: #B87A7A; font-size: 12px;");
     loginButton->setEnabled(true);
 }
 
