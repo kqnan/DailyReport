@@ -1,5 +1,7 @@
 #include "animatedlistwidget.h"
 #include "animationutils.h"
+#include <QPainter>
+#include <QPaintEvent>
 
 AnimatedListWidget::AnimatedListWidget(QWidget *parent)
     : QListWidget(parent)
@@ -42,39 +44,111 @@ void AnimatedListWidget::setSlideDuration(int msecs) {
     m_slideDuration = msecs;
 }
 
+qreal AnimatedListWidget::slideProgress() const {
+    return m_slideProgress;
+}
+
+void AnimatedListWidget::setSlideProgress(qreal progress) {
+    if (qFuzzyCompare(m_slideProgress, progress))
+        return;
+
+    m_slideProgress = progress;
+    viewport()->update();
+}
+
+void AnimatedListWidget::paintEvent(QPaintEvent *event) {
+    // If no animation is in progress, use default painting
+    if (m_animatingRow < 0 || qFuzzyCompare(m_slideProgress, 1.0)) {
+        QListWidget::paintEvent(event);
+        return;
+    }
+
+    // Paint all items normally except the animating one
+    QPainter painter(viewport());
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    // First, let the base class paint everything
+    QListWidget::paintEvent(event);
+
+    // Now paint the animating item with slide effect
+    QListWidgetItem *animatingItem = item(m_animatingRow);
+    if (!animatingItem) {
+        return;
+    }
+
+    QRect itemRect = visualItemRect(animatingItem);
+    if (!itemRect.isValid()) {
+        return;
+    }
+
+    // Calculate slide offset (slide in from right)
+    int slideOffset = static_cast<int>((1.0 - m_slideProgress) * itemRect.width());
+
+    // Set up clipping to prevent drawing outside item bounds
+    painter.setClipRect(itemRect);
+
+    // Save the painter state
+    painter.save();
+
+    // Translate the painter for slide effect
+    painter.translate(slideOffset, 0);
+
+    // Get the item's visual rect and draw it with translation
+    QStyleOptionViewItem opt;
+    opt.initFrom(viewport());
+    opt.rect = itemRect.translated(-slideOffset, 0);
+    opt.text = animatingItem->text();
+    opt.state |= QStyle::State_Enabled;
+
+    // Draw the item background
+    if (selectionModel()->isSelected(animatingItem)) {
+        opt.state |= QStyle::State_Selected;
+    }
+
+    style()->drawControl(QStyle::CE_ItemViewItem, &opt, &painter, this);
+
+    // Restore painter state
+    painter.restore();
+}
+
 void AnimatedListWidget::slideInNext() {
     if (m_pendingItems.isEmpty()) return;
 
     QString text = m_pendingItems.takeFirst();
 
-    // 创建新项，初始位置在右侧
+    // Create new item
     QListWidgetItem *item = new QListWidgetItem(text);
-    item->setData(Qt::UserRole, QVariant()); // 用于动画状态
 
-    // 获取插入位置
+    // Get insertion position
     int row = count();
     insertItem(row, item);
 
-    // 创建滑入动画
-    QWidget *itemWidget = itemWidget(item);
-    if (!itemWidget) {
-        // 使用项的几何动画
-        QPropertyAnimation *slideIn = new QPropertyAnimation(this, QByteArray());
+    // Track the animating row
+    m_animatingRow = row;
+    m_slideProgress = 0.0;
+
+    if (AnimationUtils::animationsEnabled()) {
+        // Create slide-in animation using the slideProgress property
+        QPropertyAnimation *slideIn = new QPropertyAnimation(this, "slideProgress");
         slideIn->setDuration(m_slideDuration);
         slideIn->setStartValue(0.0);
         slideIn->setEndValue(1.0);
         slideIn->setEasingCurve(QEasingCurve::OutCubic);
 
-        // 触发重绘
         connect(slideIn, &QPropertyAnimation::finished, this, [this]() {
+            m_animatingRow = -1;
+            m_slideProgress = 1.0;
             viewport()->update();
         });
 
         slideIn->start(QAbstractAnimation::DeleteWhenStopped);
+    } else {
+        m_animatingRow = -1;
+        m_slideProgress = 1.0;
     }
 
-    // 处理下一项
+    // Process next item with delay
     if (!m_pendingItems.isEmpty()) {
-        m_slideTimer->start(m_slideDuration / 2);
+        m_slideTimer->start(m_slideDuration + 30);
     }
 }
