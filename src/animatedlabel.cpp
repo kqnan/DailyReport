@@ -33,6 +33,7 @@ void AnimatedLabel::setAnimatedText(const QString &text) {
     connect(m_animation, &QPropertyAnimation::finished, this, [this]() {
         QLabel::setText(m_newText);
         m_oldText.clear();
+        m_animation = nullptr;
         update();
     });
 
