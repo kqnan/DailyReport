@@ -76,25 +76,32 @@
 ### Step 8: 输入用户名
 
 1. 点击用户名输入框: `action: "left_click", coordinate: [坐标]`
-2. 输入用户名: `action: "type", text: "用户名"`
-3. 截图
+2. 输入用户名: `action: "type", text: "<TEST_USERNAME环境变量的值>"`
+3. 截图并保存
 
 ### Step 9: 输入密码
 
 1. 点击密码输入框: `action: "left_click", coordinate: [坐标]`
-2. 输入密码: `action: "type", text: "密码"`
-3. 截图
+2. 输入密码: `action: "type", text: "<TEST_PASSWORD环境变量的值>"`
+3. 截图并保存
 
 ### Step 10: 点击登录
 
 1. 点击登录按钮: `action: "left_click", coordinate: [坐标]`
-2. 等待 1 秒
-3. 截图
+2. 等待 1 秒（注：可直接继续下一步骤，MCP工具操作之间自然存在延迟；若需精确等待，可使用 `mcp__computer-use-offscreen__wait_for_window` 确认窗口状态）
+3. 截图并保存
 
 ### Step 11: 清理
 
 使用 MCP 工具 `mcp__computer-use-offscreen__destroy_session`:
 - session_id: 第一步返回的值
+
+## 截图保存说明
+
+使用 MCP 工具 `mcp__computer-use-offscreen__computer` 的 `get_screenshot` action 捕获屏幕后，截图数据会返回给调用方。执行测试的子代理需要将截图保存到指定目录：
+- 截图目录路径由配置参数中的"截图目录"指定
+- 使用时间戳创建子目录以区分不同测试运行
+- 按下方"截图命名规范"保存文件
 
 ## 截图命名规范
 
@@ -105,6 +112,16 @@
 - `04_username_filled.png`
 - `05_password_filled.png`
 - `06_login_clicked.png`
+
+## 成功判定标准
+
+测试判定为"通过"需满足以下条件：
+1. 所有步骤均成功执行，无超时或异常
+2. 登录对话框在点击登录按钮后成功关闭
+3. 主界面显示登录成功状态（如用户信息、欢迎消息等）
+4. 未出现任何错误提示框或错误消息
+
+如果登录对话框未关闭或出现错误提示，则判定为"失败"。
 
 ## 错误处理
 
