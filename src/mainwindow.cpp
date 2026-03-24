@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "utils.h"
 #include "logindialog.h"
+#include "animationutils.h"
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QStandardPaths>
@@ -14,6 +15,8 @@
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QNetworkAccessManager>
+#include <QPropertyAnimation>
+#include <QEasingCurve>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -23,6 +26,17 @@ MainWindow::MainWindow(QWidget *parent)
     initUI();
     loadSessions(getCurrentDate());
     setupApiConnections();
+
+    // Window fade-in animation
+    if (AnimationUtils::animationsEnabled()) {
+        setWindowOpacity(0.0);
+        QPropertyAnimation *fadeIn = new QPropertyAnimation(this, "windowOpacity");
+        fadeIn->setDuration(300);
+        fadeIn->setStartValue(0.0);
+        fadeIn->setEndValue(1.0);
+        fadeIn->setEasingCurve(QEasingCurve::InOutQuad);
+        fadeIn->start(QPropertyAnimation::DeleteWhenStopped);
+    }
 }
 
 MainWindow::~MainWindow() {
@@ -57,66 +71,249 @@ void MainWindow::initUI() {
     setWindowTitle("工时记录");
     setMinimumSize(600, 500);
 
-    // Create widgets
-    startButton = new QPushButton("🟢 上班");
-    endButton = new QPushButton("🔴 下班");
+    // Morandi color palette QSS styles
+    QString morandiStyle = R"(
+        QMainWindow, QWidget {
+            background-color: #F0EDE8;
+            color: #4A4A4A;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        QLabel {
+            background-color: transparent;
+            color: #4A4A4A;
+            font-size: 14px;
+        }
+        QDateEdit {
+            background-color: #FAF8F5;
+            border: 1px solid #D4CFC7;
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: #4A4A4A;
+        }
+        QDateEdit::drop-down {
+            border: none;
+        }
+        QDateEdit QCalendarWidget {
+            background-color: #FAF8F5;
+        }
+        QListWidget {
+            background-color: #FAF8F5;
+            border: 1px solid #D4CFC7;
+            border-radius: 8px;
+            padding: 8px;
+            outline: none;
+        }
+        QListWidget::item {
+            background-color: transparent;
+            border-radius: 6px;
+            padding: 8px;
+            margin: 2px 0;
+        }
+        QListWidget::item:selected {
+            background-color: #E8E4DF;
+        }
+        QListWidget::item:hover {
+            background-color: #F5F2EE;
+        }
+        QPushButton {
+            background-color: #E8E4DF;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            color: #4A4A4A;
+            font-size: 13px;
+        }
+        QPushButton:hover {
+            background-color: #D8D4CF;
+        }
+        QPushButton:pressed {
+            background-color: #C8C4BF;
+        }
+        QComboBox {
+            background-color: #FAF8F5;
+            border: 1px solid #D4CFC7;
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: #4A4A4A;
+        }
+        QComboBox::drop-down {
+            border: none;
+        }
+        QComboBox QAbstractItemView {
+            background-color: #FAF8F5;
+            border: 1px solid #D4CFC7;
+            selection-background-color: #E8E4DF;
+        }
+        QPlainTextEdit {
+            background-color: #FAF8F5;
+            border: 1px solid #D4CFC7;
+            border-radius: 6px;
+            padding: 8px;
+            color: #4A4A4A;
+        }
+    )";
+    setStyleSheet(morandiStyle);
+
+    // Create widgets with Morandi colors
+    startButton = new RippleButton("上班");
+    startButton->setStyleSheet(R"(
+        RippleButton {
+            background-color: #6B8E6B;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 48px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        RippleButton:hover {
+            background-color: #5D7D5D;
+        }
+        RippleButton:pressed {
+            background-color: #4F6D4F;
+        }
+    )");
+    startButton->setRippleColor(QColor(255, 255, 255, 80));
+
+    endButton = new RippleButton("下班");
+    endButton->setStyleSheet(R"(
+        RippleButton {
+            background-color: #B87A7A;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 48px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        RippleButton:hover {
+            background-color: #A56A6A;
+        }
+        RippleButton:pressed {
+            background-color: #925A5A;
+        }
+    )");
+    endButton->setRippleColor(QColor(255, 255, 255, 80));
     endButton->hide();
 
     editButton = new QPushButton("编辑");
+    editButton->setStyleSheet("background-color: #8B7FA3; color: white; border-radius: 6px; padding: 6px 16px;");
+
     deleteButton = new QPushButton("删除");
-    exportCsvButton = new QPushButton("📥 导出 CSV");
-    exportJsonButton = new QPushButton("📥 导出 JSON");
+    deleteButton->setStyleSheet("background-color: #B87A7A; color: white; border-radius: 6px; padding: 6px 16px;");
+
+    exportCsvButton = new QPushButton("导出 CSV");
+    exportJsonButton = new QPushButton("导出 JSON");
+
     todayButton = new QPushButton("今天");
-    openFolderButton = new QPushButton("📂 打开记录文件夹");
-    loginButton = new QPushButton("🔐 登录");
-    syncButton = new QPushButton("📤 同步");
+    todayButton->setStyleSheet("background-color: #8B7FA3; color: white; border-radius: 6px; padding: 6px 16px;");
+
+    openFolderButton = new QPushButton("打开记录文件夹");
+
+    loginButton = new RippleButton("登录");
+    loginButton->setStyleSheet(R"(
+        RippleButton {
+            background-color: #6B8BA3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 20px;
+            font-size: 13px;
+        }
+        RippleButton:hover {
+            background-color: #5A7A93;
+        }
+        RippleButton:pressed {
+            background-color: #4A6A83;
+        }
+    )");
+    loginButton->setRippleColor(QColor(255, 255, 255, 60));
+
+    syncButton = new RippleButton("同步");
+    syncButton->setStyleSheet(R"(
+        RippleButton {
+            background-color: #6B8BA3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+        RippleButton:hover {
+            background-color: #5A7A93;
+        }
+        RippleButton:pressed {
+            background-color: #4A6A83;
+        }
+    )");
+    syncButton->setRippleColor(QColor(255, 255, 255, 60));
 
     statusLabel = new QLabel("状态: 未登录");
 
     totalHoursLabel = new QLabel("0小时");
+    totalHoursLabel->setStyleSheet("font-weight: bold; font-size: 16px; color: #6B8E6B;");
+
     sessionCountLabel = new QLabel("0 段");
+    sessionCountLabel->setStyleSheet("font-weight: bold; font-size: 16px; color: #6B8BA3;");
+
     startTimeLabel = new QLabel("开始时间: -");
-    elapsedTimeLabel = new QLabel("已工作：0 小时 0 分钟");
+
+    elapsedTimeLabel = new AnimatedLabel();
+    elapsedTimeLabel->setText("已工作：0 小时 0 分钟");
+    elapsedTimeLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: #6B8E6B; padding: 8px;");
     elapsedTimeLabel->hide();  // Initially hidden, shown when shift starts
 
     dateEdit = new QDateEdit(QDate::currentDate());
     dateEdit->setCalendarPopup(true);
 
-    sessionListWidget = new QListWidget();
-
-    // Styling
-    startButton->setStyleSheet("background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #10b981, stop:1 #059669); color: white; padding: 16px 48px; font-size: 20px; border-radius: 12px;");
-    endButton->setStyleSheet("background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ef4444, stop:1 #dc2626); color: white; padding: 16px 48px; font-size: 20px; border-radius: 12px;");
+    sessionListWidget = new AnimatedListWidget();
+    sessionListWidget->setSlideDuration(100);
 
     // Layout setup
     QWidget *centralWidget = new QWidget();
     setCentralWidget(centralWidget);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
+    mainLayout->setSpacing(12);
+    mainLayout->setContentsMargins(16, 16, 16, 16);
 
     // Header
     QHBoxLayout *headerLayout = new QHBoxLayout();
     headerLayout->addWidget(new QLabel("今日已工作: "));
     headerLayout->addWidget(totalHoursLabel);
+    headerLayout->addSpacing(20);
     headerLayout->addWidget(new QLabel("上班片段: "));
     headerLayout->addWidget(sessionCountLabel);
+    headerLayout->addStretch();
     mainLayout->addLayout(headerLayout);
 
     // Control buttons
     QHBoxLayout *controlLayout = new QHBoxLayout();
+    controlLayout->addStretch();
     controlLayout->addWidget(startButton);
     controlLayout->addWidget(endButton);
+    controlLayout->addStretch();
     mainLayout->addLayout(controlLayout);
 
     // Start time label
-    mainLayout->addWidget(startTimeLabel);
-    mainLayout->addWidget(elapsedTimeLabel);
+    QHBoxLayout *timeLayout = new QHBoxLayout();
+    timeLayout->addStretch();
+    timeLayout->addWidget(startTimeLabel);
+    timeLayout->addStretch();
+    mainLayout->addLayout(timeLayout);
+
+    QHBoxLayout *elapsedLayout = new QHBoxLayout();
+    elapsedLayout->addStretch();
+    elapsedLayout->addWidget(elapsedTimeLabel);
+    elapsedLayout->addStretch();
+    mainLayout->addLayout(elapsedLayout);
 
     // Date selector
     QHBoxLayout *dateLayout = new QHBoxLayout();
     dateLayout->addWidget(new QLabel("选择日期: "));
     dateLayout->addWidget(dateEdit);
     dateLayout->addWidget(todayButton);
+    dateLayout->addStretch();
     mainLayout->addLayout(dateLayout);
 
     // Export buttons
@@ -125,11 +322,13 @@ void MainWindow::initUI() {
     exportLayout->addWidget(exportJsonButton);
     exportLayout->addWidget(openFolderButton);
     exportLayout->addWidget(syncButton);
+    exportLayout->addStretch();
     mainLayout->addLayout(exportLayout);
 
     // Status label and login button
     QHBoxLayout *statusLayout = new QHBoxLayout();
     statusLayout->addWidget(statusLabel);
+    statusLayout->addStretch();
     statusLayout->addWidget(loginButton);
     mainLayout->addLayout(statusLayout);
 
@@ -137,21 +336,21 @@ void MainWindow::initUI() {
     mainLayout->addWidget(sessionListWidget);
 
     // Connect signals
-    connect(startButton, &QPushButton::clicked, this, &MainWindow::onStartShift);
-    connect(endButton, &QPushButton::clicked, this, &MainWindow::onEndShift);
+    connect(startButton, &RippleButton::clicked, this, &MainWindow::onStartShift);
+    connect(endButton, &RippleButton::clicked, this, &MainWindow::onEndShift);
     connect(dateEdit, &QDateEdit::dateChanged, this, &MainWindow::onDateChanged);
     connect(todayButton, &QPushButton::clicked, [this]() {
         dateEdit->setDate(QDate::currentDate());
         loadSessions(dateEdit->date().toString("yyyy-MM-dd"));
     });
-    connect(sessionListWidget, &QListWidget::itemActivated, this, &MainWindow::onEditSession);
+    connect(sessionListWidget, &AnimatedListWidget::itemActivated, this, &MainWindow::onEditSession);
     connect(editButton, &QPushButton::clicked, this, &MainWindow::onEditSession);
     connect(deleteButton, &QPushButton::clicked, this, &MainWindow::onDeleteSession);
     connect(exportCsvButton, &QPushButton::clicked, this, &MainWindow::onExport);
     connect(exportJsonButton, &QPushButton::clicked, this, &MainWindow::onExport);
     connect(openFolderButton, &QPushButton::clicked, this, &MainWindow::onOpenFolder);
-    connect(loginButton, &QPushButton::clicked, this, &MainWindow::onLoginClicked);
-    connect(syncButton, &QPushButton::clicked, this, &MainWindow::onSync);
+    connect(loginButton, &RippleButton::clicked, this, &MainWindow::onLoginClicked);
+    connect(syncButton, &RippleButton::clicked, this, &MainWindow::onSync);
 
     // Elapsed timer
     elapsedTimer = new QTimer(this);
@@ -190,7 +389,7 @@ void MainWindow::onStartShift() {
     endButton->show();
     startTimeLabel->setText("开始时间: " + session.startTime.mid(11, 5));
     elapsedTimeLabel->show();
-    elapsedTimeLabel->setText("已工作：0 小时 0 分钟");
+    elapsedTimeLabel->setTextImmediate("已工作：0 小时 0 分钟");
     elapsedTimer->start(60000);  // 60 seconds = 1 minute
     loadSessions(session.date);
 }
@@ -348,7 +547,7 @@ void MainWindow::formatElapsed(double seconds) const {
     int hours = static_cast<int>(seconds / 3600);
     int minutes = static_cast<int>((static_cast<int>(seconds) % 3600) / 60);
 
-    elapsedTimeLabel->setText(QString("已工作：%1 小时%2 分钟").arg(hours).arg(minutes));
+    elapsedTimeLabel->setAnimatedText(QString("已工作：%1 小时%2 分钟").arg(hours).arg(minutes));
 }
 
 void MainWindow::onEditSession() {
