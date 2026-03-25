@@ -203,12 +203,15 @@ void MainWindow::initUI() {
     deleteButton->setStyleSheet("background-color: #B87A7A; color: white; border-radius: 6px; padding: 6px 16px;");
 
     exportCsvButton = new QPushButton("导出 CSV");
+    exportCsvButton->hide();
     exportJsonButton = new QPushButton("导出 JSON");
+    exportJsonButton->hide();
 
     todayButton = new QPushButton("今天");
     todayButton->setStyleSheet("background-color: #8B7FA3; color: white; border-radius: 6px; padding: 6px 16px;");
 
     openFolderButton = new QPushButton("打开记录文件夹");
+    openFolderButton->hide();
 
     loginButton = new RippleButton("登录");
     loginButton->setStyleSheet(R"(
@@ -247,6 +250,7 @@ void MainWindow::initUI() {
         }
     )");
     syncButton->setRippleColor(QColor(255, 255, 255, 60));
+    syncButton->hide();
 
     statusLabel = new QLabel("状态: 未登录");
 
@@ -316,21 +320,17 @@ void MainWindow::initUI() {
     dateLayout->addStretch();
     mainLayout->addLayout(dateLayout);
 
-    // Export buttons
-    QHBoxLayout *exportLayout = new QHBoxLayout();
-    exportLayout->addWidget(exportCsvButton);
-    exportLayout->addWidget(exportJsonButton);
-    exportLayout->addWidget(openFolderButton);
-    exportLayout->addWidget(syncButton);
-    exportLayout->addStretch();
-    mainLayout->addLayout(exportLayout);
-
     // Status label and login button
     QHBoxLayout *statusLayout = new QHBoxLayout();
     statusLayout->addWidget(statusLabel);
     statusLayout->addStretch();
     statusLayout->addWidget(loginButton);
     mainLayout->addLayout(statusLayout);
+
+    // Record title
+    QLabel *recordTitleLabel = new QLabel("当日记录:");
+    recordTitleLabel->setStyleSheet("font-weight: bold; font-size: 14px; margin-top: 8px;");
+    mainLayout->addWidget(recordTitleLabel);
 
     // Session list
     mainLayout->addWidget(sessionListWidget);
